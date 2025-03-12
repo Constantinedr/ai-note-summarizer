@@ -1,24 +1,25 @@
 import { useState } from "react";
 import { HfInference } from "@huggingface/inference";
 
-const hf = new HfInference("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"); 
+const hf = new HfInference("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"); // Replace with your Hugging Face API key
 
 function App() {
-  const [text, setText] = useState("");  
-  const [summary, setSummary] = useState("");  
+  const [input, setInput] = useState("");  
+  const [response, setResponse] = useState("");  
   const [loading, setLoading] = useState(false);
 
-  const handleSummarize = async () => {
-    if (!text) return alert("Please enter some text!");
+  const handleChat = async () => {
+    if (!input) return alert("Please enter a message!");
     setLoading(true);
 
     try {
-      const result = await hf.summarization({
-        model: "facebook/bart-large-cnn",  // Pre-trained summarization model
-        inputs: text
+      const result = await hf.textGeneration({
+        model: "mistralai/Mistral-7B-Instruct-v0.1", // Mistral 7B Chat Model
+        inputs: input,
+        parameters: { max_new_tokens: 200, temperature: 0.7 }
       });
 
-      setSummary(result.summary_text);
+      setResponse(result.generated_text);
     } catch (error) {
       console.error("Error:", error);
       alert("Something went wrong! Check your API key.");
@@ -29,21 +30,21 @@ function App() {
 
   return (
     <div style={{ padding: "20px", maxWidth: "500px", margin: "auto" }}>
-      <h1>AI Note Summarizer</h1>
+      <h1>AI Chatbot (Mistral-7B)</h1>
       <textarea
-        rows="5"
+        rows="3"
         style={{ width: "100%", padding: "10px" }}
-        placeholder="Enter your notes..."
-        value={text}
-        onChange={(e) => setText(e.target.value)}
+        placeholder="Ask something..."
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
       />
-      <button onClick={handleSummarize} style={{ marginTop: "10px" }} disabled={loading}>
-        {loading ? "Summarizing..." : "Summarize"}
+      <button onClick={handleChat} style={{ marginTop: "10px" }} disabled={loading}>
+        {loading ? "Thinking..." : "Send"}
       </button>
-      {summary && (
+      {response && (
         <div style={{ marginTop: "20px", padding: "10px", background: "#f0f0f0" }}>
-          <strong>Summary:</strong>
-          <p>{summary}</p>
+          <strong>AI Response:</strong>
+          <p>{response}</p>
         </div>
       )}
     </div>
