@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { HfInference } from "@huggingface/inference";
+import styles from "./App.module.css"; // Import the CSS Module
 
 const hf = new HfInference("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");
 
@@ -30,39 +31,39 @@ function App() {
   };
 
   return (
-    
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
-      <h1 className="text-3xl font-bold text-center mb-6">AI Note Summarizer</h1>
-      <div className="flex flex-col md:flex-row w-full max-w-4xl bg-gray-800 p-6 rounded-lg shadow-xl items-center justify-center">
+    <div className={styles.container}>
+      <h1 className={styles.title}>AI Note Summarizer</h1>
+
+      <div className={styles.card}>
         {/* Left Section */}
-        <div className="w-full md:w-2/3 p-6 flex flex-col items-center justify-center">
+        <div className={styles.leftSection}>
           <textarea
-            className="w-full p-3 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={styles.textarea}
             rows="5"
             placeholder="Enter your notes..."
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
           <button
-            className="w-full bg-blue-500 hover:bg-blue-600 transition-all duration-300 text-white font-bold py-2 px-4 rounded mt-4 disabled:opacity-50"
+            className={styles.button}
             onClick={handleSummarize}
             disabled={loading}
           >
             {loading ? "Summarizing..." : "Summarize"}
           </button>
         </div>
-        
+
         {/* Right Section for Saved Summaries */}
-        <div className="w-full md:w-1/3 p-6 border-t md:border-l border-gray-700 overflow-y-auto max-h-96 flex flex-col items-center justify-center">
-          <h2 className="text-xl font-semibold mb-4 text-center">Saved Summaries</h2>
+        <div className={styles.rightSection}>
+          <h2 className={styles.subtitle}>Saved Summaries</h2>
           {savedSummaries.length === 0 ? (
-            <p className="text-gray-400 text-center">No summaries saved yet.</p>
+            <p className={styles.noSummaries}>No summaries saved yet.</p>
           ) : (
-            <ul className="space-y-3 w-full flex flex-col items-center">
+            <ul className={styles.summaryList}>
               {savedSummaries.map((item, index) => (
-                <li key={index} className="p-3 bg-gray-700 rounded-lg shadow text-center w-full">
+                <li key={index} className={styles.summaryItem}>
                   <strong>Summary {index + 1}:</strong>
-                  <p className="text-gray-300">{item}</p>
+                  <p>{item}</p>
                 </li>
               ))}
             </ul>
