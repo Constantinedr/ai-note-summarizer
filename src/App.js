@@ -1,6 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { HfInference } from "@huggingface/inference";
 import axios from "axios";
+import ReCAPTCHA from "react-google-recaptcha"; // Import ReCAPTCHA
 import styles from "./App.module.css";
 
 const hf = new HfInference("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");
@@ -73,10 +74,10 @@ function Auth() {
   const [loginPassword, setLoginPassword] = useState("");
   const [message, setMessage] = useState("");
   const [showLogin, setShowLogin] = useState(true);
-  const [captchaToken, setCaptchaToken] = useState(""); // State to store CAPTCHA token
+  const [captchaToken, setCaptchaToken] = useState("");
 
   // reCAPTCHA Site Key (from Google reCAPTCHA dashboard)
-  const recaptchaSiteKey = "YOUR_RECAPTCHA_SITE_KEY";
+  const recaptchaSiteKey = "6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5";
 
   // Handle CAPTCHA token change
   const handleCaptchaChange = (token) => {
@@ -208,12 +209,7 @@ function App() {
       <button className={styles.switchButton} onClick={() => setShowSummarizer(!showSummarizer)}>
         Switch to {showSummarizer ? "Auth" : "Summarizer"}
       </button>
-      <div className={!showSummarizer ? styles.hidden : undefined}>
-        <Summarizer />
-      </div>
-      <div className={showSummarizer ? styles.hidden : undefined}>
-        <Auth />
-      </div>
+      {showSummarizer ? <Summarizer /> : <Auth />}
     </div>
   );
 }
