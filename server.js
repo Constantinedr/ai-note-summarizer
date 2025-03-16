@@ -39,7 +39,7 @@ const RECAPTCHA_SECRET_KEY = '6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5';
 const verifyCaptcha = async (captchaToken) => {
   try {
     const response = await axios.post(
-      `https://www.google.com/recaptcha/api/siteverify?secret=$6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5&response=${captchaToken}`
+      `https://www.google.com/recaptcha/api/siteverify?secret=6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5&response=yourCaptchaTokenHere`
     );
     return response.data.success; // true if CAPTCHA is valid
   } catch (error) {
