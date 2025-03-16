@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
 const app = express();
-const PORT = 5001;
+const PORT =process.env.PORT || 5000;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -36,9 +36,11 @@ app.use(
 app.post("/register", (req, res) => {
   res.send("User registered");
 });
-
-app.listen(5001, () => {
-  console.log("Server running on http://localhost:5001");
+app.get("/", (req, res) => {
+  res.send("Hello, Render!");
+});
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 // MongoDB connection
 const atlasURI = "mongodb+srv://kostalampadaris:7H6u5KGL7e62KVt@cluster0.uic4a.mongodb.net/ai?retryWrites=true&w=majority&appName=Cluster0";
