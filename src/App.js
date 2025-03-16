@@ -77,7 +77,7 @@ function Auth() {
   const [captchaToken, setCaptchaToken] = useState("");
 
   // reCAPTCHA Site Key (from Google reCAPTCHA dashboard)
-  const recaptchaSiteKey = "6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5";
+  const recaptchaSiteKey = "6Lc0TfYqAAAAAPrQckrIuryDDuUHg5pQqr_w5Sbs";
 
   // Handle CAPTCHA token change
   const handleCaptchaChange = (token) => {
