@@ -88,11 +88,12 @@ function Auth() {
     if (!captchaToken) {
       return setMessage("Please complete the CAPTCHA.");
     }
-
+  
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/register", {
         username,
         password,
+        additionalInfo: "Your additional info if any", // Add this if needed
         captchaToken, // Send CAPTCHA token to the backend
       });
       setMessage("User registered successfully");
@@ -101,12 +102,12 @@ function Auth() {
       console.error("Registration failed:", error);
     }
   };
-
+  
   const handleLogin = async () => {
     if (!captchaToken) {
       return setMessage("Please complete the CAPTCHA.");
     }
-
+  
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/login", {
         username: loginUsername,
@@ -119,6 +120,7 @@ function Auth() {
       console.error("Login failed:", error);
     }
   };
+  
 
   return (
     <div className={styles.container}>
