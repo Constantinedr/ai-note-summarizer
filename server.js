@@ -12,9 +12,12 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Connect to local MongoDB
-mongoose.connect('mongodb://localhost:27017/noteSummarizer')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Failed to connect to MongoDB:', err));
+// Replace with your MongoDB Atlas connection string
+const atlasURI = 'mongodb+srv://kostalampadaris:7H6u5KGL7e62KVt@cluster0.uic4a.mongodb.net/ai?retryWrites=true&w=majority&appName=Cluster0';
+
+mongoose.connect(atlasURI)
+  .then(() => console.log('Connected to MongoDB Atlas'))
+  .catch(err => console.error('Failed to connect to MongoDB Atlas:', err));
 
 // Define a User schema
 const userSchema = new mongoose.Schema({
