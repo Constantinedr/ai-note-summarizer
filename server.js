@@ -12,47 +12,39 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Connect to local MongoDB
+// Replace with your MongoDB Atlas connection string
 const atlasURI = 'mongodb+srv://kostalampadaris:7H6u5KGL7e62KVt@cluster0.uic4a.mongodb.net/ai?retryWrites=true&w=majority&appName=Cluster0';
 
 mongoose.connect(atlasURI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('Failed to connect to MongoDB Atlas:', err));
 
-// Define a User schema with a lastRegistered field
+// Define a User schema
 const userSchema = new mongoose.Schema({
-  username: { type: String, unique: true },
+  username: String,
   password: String,
   additionalInfo: String,
-  lastRegistered: { type: Date, default: null },
 });
 
+// Add a unique index to the username field
+userSchema.index({ username: 1 }, { unique: true });
+
+// Create the User model
 const User = mongoose.model('User', userSchema);
 
 // Register endpoint
 app.post('/register', async (req, res) => {
   const { username, password, additionalInfo } = req.body;
 
-  // Check if username already exists
+  // Check if the username already exists
   const existingUser = await User.findOne({ username });
   if (existingUser) {
-    const now = new Date();
-    const cooldown = 60 * 1000; // 1 minute cooldown
-    const lastRegistered = existingUser.lastRegistered;
-
-    if (lastRegistered && now - lastRegistered < cooldown) {
-      return res.status(400).send('You can only register once per minute');
-    }
+    return res.status(400).send('Username already taken');
   }
 
-  // Hash password and save user
+  // If the username is unique, proceed with registration
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User({
-    username,
-    password: hashedPassword,
-    additionalInfo,
-    lastRegistered: new Date(),
-  });
-
+  const user = new User({ username, password: hashedPassword, additionalInfo });
   await user.save();
   res.status(201).send('User registered');
 });
