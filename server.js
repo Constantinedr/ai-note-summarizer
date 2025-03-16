@@ -11,7 +11,35 @@ const PORT = 5000;
 
 app.use(cors());
 app.use(bodyParser.json());
+const allowedOrigins = [
+  "https://spontaneous-parfait-de39c7.netlify.app", // Your frontend URL
+  "http://localhost:3000", // For local development
+];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
 
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+        return callback(new Error(msg), false);
+      }
+
+      return callback(null, true);
+    },
+    credentials: true, // Allow cookies and credentials
+  })
+);
+
+// Your existing routes
+app.post("/register", (req, res) => {
+  res.send("User registered");
+});
+
+app.listen(5000, () => {
+  console.log("Server running on http://localhost:5000");
+});
 // MongoDB connection
 const atlasURI = "mongodb+srv://kostalampadaris:7H6u5KGL7e62KVt@cluster0.uic4a.mongodb.net/ai?retryWrites=true&w=majority&appName=Cluster0";
 mongoose.connect(atlasURI)
