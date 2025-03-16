@@ -67,29 +67,55 @@ function Summarizer() {
 }
 
 function Auth() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginUsername, setLoginUsername] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [showLogin, setShowLogin] = useState(true);
+  const [captchaToken, setCaptchaToken] = useState(""); // State to store CAPTCHA token
+
+  // reCAPTCHA Site Key (from Google reCAPTCHA dashboard)
+  const recaptchaSiteKey = "YOUR_RECAPTCHA_SITE_KEY";
+
+  // Handle CAPTCHA token change
+  const handleCaptchaChange = (token) => {
+    setCaptchaToken(token);
+  };
 
   const handleRegister = async () => {
+    if (!captchaToken) {
+      return setMessage("Please complete the CAPTCHA.");
+    }
+
     try {
-      await axios.post('https://ai-note-summarizer.onrender.com/register', { username, password });
-      setMessage('User registered successfully');
+      const response = await axios.post("https://ai-note-summarizer.onrender.com/register", {
+        username,
+        password,
+        captchaToken, // Send CAPTCHA token to the backend
+      });
+      setMessage("User registered successfully");
     } catch (error) {
-      setMessage('Registration failed');
-      console.error('Registration failed:');
+      setMessage("Registration failed");
+      console.error("Registration failed:", error);
     }
   };
 
   const handleLogin = async () => {
+    if (!captchaToken) {
+      return setMessage("Please complete the CAPTCHA.");
+    }
+
     try {
-      const response = await axios.post('https://ai-note-summarizer.onrender.com/login', { username: loginUsername, password: loginPassword });
-      setMessage(`Login successful! `);
+      const response = await axios.post("https://ai-note-summarizer.onrender.com/login", {
+        username: loginUsername,
+        password: loginPassword,
+        captchaToken, // Send CAPTCHA token to the backend
+      });
+      setMessage("Login successful!");
     } catch (error) {
-      setMessage('Login failed');
-      console.error('Login failed:', error);
+      setMessage("Login failed");
+      console.error("Login failed:", error);
     }
   };
 
@@ -97,31 +123,77 @@ function Auth() {
     <div className={styles.container}>
       <div className={styles.card}>
         <h1 className={styles.title}>User Authentication</h1>
-        <div className={styles.section}>
-          <h2 className={styles.subtitle}>Register</h2>
-          <div className={styles.inputWrapper}>
-            <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} className={styles.prettyInput} />
-            
+        <button
+          className={styles.toggleButton}
+          onClick={() => setShowLogin(!showLogin)}
+        >
+          Switch to {showLogin ? "Register" : "Login"}
+        </button>
+        {showLogin ? (
+          // Login Form
+          <div className={styles.section}>
+            <h2 className={styles.subtitle}>Login</h2>
+            <div className={styles.inputWrapper}>
+              <input
+                type="text"
+                placeholder="Username"
+                value={loginUsername}
+                onChange={(e) => setLoginUsername(e.target.value)}
+                className={styles.prettyInput}
+              />
+            </div>
+            <br />
+            <div className={styles.inputWrapper}>
+              <input
+                type="password"
+                placeholder="Password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                className={styles.prettyInput}
+              />
+            </div>
+            {/* reCAPTCHA Component */}
+            <ReCAPTCHA
+              sitekey={recaptchaSiteKey}
+              onChange={handleCaptchaChange}
+            />
+            <button onClick={handleLogin} className={styles.button}>
+              Login
+            </button>
           </div>
-          <br></br>
-          <div className={styles.inputWrapper}>
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.prettyInput} />
-            
+        ) : (
+          // Register Form
+          <div className={styles.section}>
+            <h2 className={styles.subtitle}>Register</h2>
+            <div className={styles.inputWrapper}>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className={styles.prettyInput}
+              />
+            </div>
+            <br />
+            <div className={styles.inputWrapper}>
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={styles.prettyInput}
+              />
+            </div>
+            {/* reCAPTCHA Component */}
+            <ReCAPTCHA
+              sitekey={recaptchaSiteKey}
+              onChange={handleCaptchaChange}
+            />
+            <button onClick={handleRegister} className={styles.button}>
+              Register
+            </button>
           </div>
-          <button onClick={handleRegister} className={styles.button}>Register</button>
-        </div>
-        <div className={styles.section}>
-          <h2 className={styles.subtitle}>Login</h2>
-          <div className={styles.inputWrapper}>
-            <input type="text" placeholder="Username" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} className={styles.prettyInput} />
-            
-          </div>
-          <br></br>
-          <div className={styles.inputWrapper}>
-            <input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className={styles.prettyInput} />
-          </div>
-          <button onClick={handleLogin} className={styles.button}>Login</button>
-        </div>
+        )}
         {message && <p className={styles.message}>{message}</p>}
       </div>
     </div>
@@ -136,7 +208,12 @@ function App() {
       <button className={styles.switchButton} onClick={() => setShowSummarizer(!showSummarizer)}>
         Switch to {showSummarizer ? "Auth" : "Summarizer"}
       </button>
-      {showSummarizer ? <Summarizer /> : <Auth />}
+      <div className={!showSummarizer ? styles.hidden : undefined}>
+        <Summarizer />
+      </div>
+      <div className={showSummarizer ? styles.hidden : undefined}>
+        <Auth />
+      </div>
     </div>
   );
 }

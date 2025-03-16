@@ -11,7 +11,19 @@
     width: 100%;
     padding: 20px;
   }
+  .toggleButton {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
   
+  .toggleButton:hover {
+    background-color: #0056b3;
+  }
   /* Title */
   .title {
     font-size: 2rem;
@@ -118,6 +130,9 @@
   transition: background 0.3s;
   justify-content: center;
   position: center;
+}
+.hidden {
+  display: none;
 }
   .prettyInput {
     width: 80%;

@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const axios = require('axios'); // For CAPTCHA verification
 
 const app = express();
 const PORT = 5000;
@@ -11,8 +12,7 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Connect to local MongoDB
-// Replace with your MongoDB Atlas connection string
+// MongoDB Atlas connection string
 const atlasURI = 'mongodb+srv://kostalampadaris:7H6u5KGL7e62KVt@cluster0.uic4a.mongodb.net/ai?retryWrites=true&w=majority&appName=Cluster0';
 
 mongoose.connect(atlasURI)
@@ -32,9 +32,31 @@ userSchema.index({ username: 1 }, { unique: true });
 // Create the User model
 const User = mongoose.model('User', userSchema);
 
+// Google reCAPTCHA Secret Key (from your reCAPTCHA dashboard)
+const RECAPTCHA_SECRET_KEY = '6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5';
+
+// Verify CAPTCHA token
+const verifyCaptcha = async (captchaToken) => {
+  try {
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=$6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5&response=${captchaToken}`
+    );
+    return response.data.success; // true if CAPTCHA is valid
+  } catch (error) {
+    console.error('CAPTCHA verification failed:', error);
+    return false;
+  }
+};
+
 // Register endpoint
 app.post('/register', async (req, res) => {
-  const { username, password, additionalInfo } = req.body;
+  const { username, password, additionalInfo, captchaToken } = req.body;
+
+  // Verify CAPTCHA
+  const isCaptchaValid = await verifyCaptcha(captchaToken);
+  if (!isCaptchaValid) {
+    return res.status(400).send('CAPTCHA verification failed');
+  }
 
   // Check if the username already exists
   const existingUser = await User.findOne({ username });
@@ -51,13 +73,23 @@ app.post('/register', async (req, res) => {
 
 // Login endpoint
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, captchaToken } = req.body;
+
+  // Verify CAPTCHA
+  const isCaptchaValid = await verifyCaptcha(captchaToken);
+  if (!isCaptchaValid) {
+    return res.status(400).send('CAPTCHA verification failed');
+  }
+
+  // Check if the user exists
   const user = await User.findOne({ username });
   if (!user) return res.status(400).send('User not found');
 
+  // Validate password
   const validPassword = await bcrypt.compare(password, user.password);
   if (!validPassword) return res.status(400).send('Invalid password');
 
+  // Generate JWT token
   const token = jwt.sign({ username }, 'secretkey');
   res.json({ token });
 });
