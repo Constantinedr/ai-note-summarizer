@@ -75,7 +75,7 @@ function Auth() {
 
   const handleRegister = async () => {
     try {
-      await axios.post('http://localhost:5000/register', { username, password });
+      await axios.post('https://ai-note-summarizer.onrender.com/register', { username, password });
       setMessage('User registered successfully');
     } catch (error) {
       setMessage('Registration failed');
@@ -85,7 +85,7 @@ function Auth() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/login', { username: loginUsername, password: loginPassword });
+      const response = await axios.post('https://ai-note-summarizer.onrender.com/login', { username: loginUsername, password: loginPassword });
       setMessage(`Login successful! `);
     } catch (error) {
       setMessage('Login failed');
