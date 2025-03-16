@@ -79,14 +79,14 @@ function Auth() {
       setMessage('User registered successfully');
     } catch (error) {
       setMessage('Registration failed');
-      console.error('Registration failed:', error);
+      console.error('Registration failed:');
     }
   };
 
   const handleLogin = async () => {
     try {
       const response = await axios.post('http://localhost:5000/login', { username: loginUsername, password: loginPassword });
-      setMessage(`Login successful! Token: ${response.data.token}`);
+      setMessage(`Login successful! `);
     } catch (error) {
       setMessage('Login failed');
       console.error('Login failed:', error);
