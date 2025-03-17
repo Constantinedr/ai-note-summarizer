@@ -39,8 +39,8 @@ const CAPTCHA_BYPASS_SECRET = 'my-secret-bypass-token';
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'kostalampadaris@gmail.com', // Replace with your email
-    pass: 'kl200520072009p!', // Replace with your email password or app-specific password
+    user: 'lampadarisconstantine@gmail.com', // Replace with your email
+    pass: 'l200520072009', // Replace with your email password or app-specific password
   },
 });
 
