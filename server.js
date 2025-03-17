@@ -40,7 +40,11 @@ const verifyCaptcha = async (captchaToken) => {
   try {
     const response = await axios.post(
 <<<<<<< HEAD
+<<<<<<< HEAD
       `https://www.google.com/recaptcha/api/siteverify?secret=6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5&response=${captchaToken}`
+=======
+      `https://www.google.com/recaptcha/api/siteverify?secret=$6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5&response=${captchaToken}`
+>>>>>>> parent of f3b299e (ghjj)
 =======
       `https://www.google.com/recaptcha/api/siteverify?secret=$6Lc0TfYqAAAAALvUVhN-i65Sly-XMxxrP62HXRv5&response=${captchaToken}`
 >>>>>>> parent of f3b299e (ghjj)
