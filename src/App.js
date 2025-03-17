@@ -91,7 +91,7 @@ function Auth() {
     }
 
     try {
-      const response = await axios.post("https://ai-note-summarizer.onrender.com/register", { // Changed to localhost:5000 for local testing
+      const response = await axios.post("http://localhost:5000/register", { // Changed to localhost:5000 for local testing
         username,
         email,
         password,
@@ -115,7 +115,7 @@ function Auth() {
     }
 
     try {
-      const response = await axios.post("https://ai-note-summarizer.onrender.com/login", { // Changed to localhost:5000 for local testing
+      const response = await axios.post("http://localhost:5000/login", { // Changed to localhost:5000 for local testing
         email: loginEmail, // Changed from username to email
         password: loginPassword,
         captchaToken,
