@@ -69,9 +69,9 @@ function Summarizer() {
 
 function Auth() {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState(""); // New email field for registration
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loginUsername, setLoginUsername] = useState(""); // Use username for login
+  const [loginEmail, setLoginEmail] = useState(""); // Changed from loginUsername to loginEmail
   const [loginPassword, setLoginPassword] = useState("");
   const [message, setMessage] = useState("");
   const [showLogin, setShowLogin] = useState(true);
@@ -91,15 +91,20 @@ function Auth() {
     }
 
     try {
-      const response = await axios.post("https://ai-note-summarizer.onrender.com/register", {
+      const response = await axios.post("https://ai-note-summarizer.onrender.com/register", { // Changed to localhost:5000 for local testing
         username,
-        email, // Include email in the registration request
+        email,
         password,
-        captchaToken, // Send CAPTCHA token to the backend
+        captchaToken,
       });
-      setMessage("User registered successfully");
+      setMessage("User registered successfully. Please check your email to verify your account.");
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      setCaptchaToken("");
     } catch (error) {
-      setMessage("Registration failed");
+      const errorMsg = error.response?.data || "Registration failed. Please try again.";
+      setMessage(errorMsg);
       console.error("Registration failed:", error);
     }
   };
@@ -110,14 +115,19 @@ function Auth() {
     }
 
     try {
-      const response = await axios.post("https://ai-note-summarizer.onrender.com/login", {
-        username: loginUsername, // Use username for login
+      const response = await axios.post("https://ai-note-summarizer.onrender.com/login", { // Changed to localhost:5000 for local testing
+        email: loginEmail, // Changed from username to email
         password: loginPassword,
-        captchaToken, // Send CAPTCHA token to the backend
+        captchaToken,
       });
+      localStorage.setItem("token", response.data.token); // Store JWT token
       setMessage("Login successful!");
+      setLoginEmail("");
+      setLoginPassword("");
+      setCaptchaToken("");
     } catch (error) {
-      setMessage("Login failed");
+      const errorMsg = error.response?.data || "Login failed. Please try again.";
+      setMessage(errorMsg);
       console.error("Login failed:", error);
     }
   };
@@ -138,10 +148,10 @@ function Auth() {
             <h2 className={styles.subtitle}>Login</h2>
             <div className={styles.inputWrapper}>
               <input
-                type="text" // Use username for login
-                placeholder="Username"
-                value={loginUsername}
-                onChange={(e) => setLoginUsername(e.target.value)}
+                type="email" // Changed to email type
+                placeholder="Email" // Changed placeholder
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
                 className={styles.prettyInput}
               />
             </div>
@@ -155,7 +165,6 @@ function Auth() {
                 className={styles.prettyInput}
               />
             </div>
-            {/* reCAPTCHA Component */}
             <ReCAPTCHA
               sitekey={recaptchaSiteKey}
               onChange={handleCaptchaChange}
@@ -180,7 +189,7 @@ function Auth() {
             <br />
             <div className={styles.inputWrapper}>
               <input
-                type="email" // Add email field
+                type="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -197,7 +206,6 @@ function Auth() {
                 className={styles.prettyInput}
               />
             </div>
-            {/* reCAPTCHA Component */}
             <ReCAPTCHA
               sitekey={recaptchaSiteKey}
               onChange={handleCaptchaChange}
