@@ -1,4 +1,4 @@
-import React, { useState } from "react"; 
+import React, { useState } from "react";
 import { HfInference } from "@huggingface/inference";
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha"; // Import ReCAPTCHA
@@ -69,8 +69,9 @@ function Summarizer() {
 
 function Auth() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState(""); // New email field for registration
   const [password, setPassword] = useState("");
-  const [loginUsername, setLoginUsername] = useState("");
+  const [loginUsername, setLoginUsername] = useState(""); // Use username for login
   const [loginPassword, setLoginPassword] = useState("");
   const [message, setMessage] = useState("");
   const [showLogin, setShowLogin] = useState(true);
@@ -92,8 +93,8 @@ function Auth() {
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/register", {
         username,
+        email, // Include email in the registration request
         password,
-        additionalInfo: "Your additional info if any", // Add this if needed
         captchaToken, // Send CAPTCHA token to the backend
       });
       setMessage("User registered successfully");
@@ -110,7 +111,7 @@ function Auth() {
 
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/login", {
-        username: loginUsername,
+        username: loginUsername, // Use username for login
         password: loginPassword,
         captchaToken, // Send CAPTCHA token to the backend
       });
@@ -137,7 +138,7 @@ function Auth() {
             <h2 className={styles.subtitle}>Login</h2>
             <div className={styles.inputWrapper}>
               <input
-                type="text"
+                type="text" // Use username for login
                 placeholder="Username"
                 value={loginUsername}
                 onChange={(e) => setLoginUsername(e.target.value)}
@@ -173,6 +174,16 @@ function Auth() {
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                className={styles.prettyInput}
+              />
+            </div>
+            <br />
+            <div className={styles.inputWrapper}>
+              <input
+                type="email" // Add email field
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className={styles.prettyInput}
               />
             </div>
