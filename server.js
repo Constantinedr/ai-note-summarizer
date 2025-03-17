@@ -59,9 +59,9 @@ const sendVerificationEmail = async (email, token) => {
     from: 'God <lampadarisconstantine@gmail.com>', // Fixed 'from' field with display name
     to: email,
     subject: 'Verify Your Email',
-    html: `<p>Click <a href="http://localhost:3000/verify?token=${token}">here</a> to verify your email.</p>`,
+    html: `<p>Click <a href="https://ai-note-summarizer.onrender.com/verify?token=${token}">here</a> to verify your email.</p>`,
   };
-
+ 
   try {
     const info = await transporter.sendMail(mailOptions);
     console.log(`Verification email sent to ${email}: ${info.response}`);

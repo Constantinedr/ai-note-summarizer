@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { HfInference } from "@huggingface/inference";
 import axios from "axios";
-import ReCAPTCHA from "react-google-recaptcha"; // Import ReCAPTCHA
+import ReCAPTCHA from "react-google-recaptcha";
+import { BrowserRouter as Router, Route, Routes, useSearchParams } from "react-router-dom"; // Add routing
 import styles from "./App.module.css";
 
 const hf = new HfInference("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");
@@ -71,16 +72,14 @@ function Auth() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loginEmail, setLoginEmail] = useState(""); // Changed from loginUsername to loginEmail
+  const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [message, setMessage] = useState("");
   const [showLogin, setShowLogin] = useState(true);
   const [captchaToken, setCaptchaToken] = useState("");
 
-  // reCAPTCHA Site Key (from Google reCAPTCHA dashboard)
   const recaptchaSiteKey = "6Lc0TfYqAAAAAPrQckrIuryDDuUHg5pQqr_w5Sbs";
 
-  // Handle CAPTCHA token change
   const handleCaptchaChange = (token) => {
     setCaptchaToken(token);
   };
@@ -91,7 +90,7 @@ function Auth() {
     }
 
     try {
-      const response = await axios.post("https://ai-note-summarizer.onrender.com/register", { // Changed to localhost:5000 for local testing
+      const response = await axios.post("https://ai-note-summarizer.onrender.com/register", {
         username,
         email,
         password,
@@ -115,12 +114,12 @@ function Auth() {
     }
 
     try {
-      const response = await axios.post("https://ai-note-summarizer.onrender.com/login", { // Changed to localhost:5000 for local testing
-        email: loginEmail, // Changed from username to email
+      const response = await axios.post("https://ai-note-summarizer.onrender.com/login", {
+        email: loginEmail,
         password: loginPassword,
         captchaToken,
       });
-      localStorage.setItem("token", response.data.token); // Store JWT token
+      localStorage.setItem("token", response.data.token);
       setMessage("Login successful!");
       setLoginEmail("");
       setLoginPassword("");
@@ -143,13 +142,12 @@ function Auth() {
           Switch to {showLogin ? "Register" : "Login"}
         </button>
         {showLogin ? (
-          // Login Form
           <div className={styles.section}>
             <h2 className={styles.subtitle}>Login</h2>
             <div className={styles.inputWrapper}>
               <input
-                type="email" // Changed to email type
-                placeholder="Email" // Changed placeholder
+                type="email"
+                placeholder="Email"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 className={styles.prettyInput}
@@ -174,7 +172,6 @@ function Auth() {
             </button>
           </div>
         ) : (
-          // Register Form
           <div className={styles.section}>
             <h2 className={styles.subtitle}>Register</h2>
             <div className={styles.inputWrapper}>
@@ -221,16 +218,68 @@ function Auth() {
   );
 }
 
+// New Verify Component
+function Verify() {
+  const [message, setMessage] = useState("Verifying your email...");
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const verifyEmail = async () => {
+      const token = searchParams.get("token");
+      if (!token) {
+        setMessage("Invalid verification link.");
+        return;
+      }
+
+      try {
+        const response = await axios.get(`https://ai-note-summarizer.onrender.com/verify?token=${token}`);
+        setMessage(response.data); // e.g., "Email verified successfully"
+      } catch (error) {
+        const errorMsg = error.response?.data || "Verification failed. The link may be invalid or expired.";
+        setMessage(errorMsg);
+        console.error("Verification error:", error);
+      }
+    };
+
+    verifyEmail();
+  }, [searchParams]);
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Email Verification</h1>
+        <p className={styles.message}>{message}</p>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [showSummarizer, setShowSummarizer] = useState(true);
 
   return (
-    <div>
-      <button className={styles.switchButton} onClick={() => setShowSummarizer(!showSummarizer)}>
-        Switch to {showSummarizer ? "Auth" : "Summarizer"}
-      </button>
-      {showSummarizer ? <Summarizer /> : <Auth />}
-    </div>
+    <Router>
+      <div>
+        {/* Only show the switch button on the main pages */}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <button
+                  className={styles.switchButton}
+                  onClick={() => setShowSummarizer(!showSummarizer)}
+                >
+                  Switch to {showSummarizer ? "Auth" : "Summarizer"}
+                </button>
+                {showSummarizer ? <Summarizer /> : <Auth />}
+              </>
+            }
+          />
+          <Route path="/verify" element={<Verify />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
