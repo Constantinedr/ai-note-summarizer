@@ -9,7 +9,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 const PORT = 5000;
 
-app.use(cors({ origin: "http://localhost:3000" })); // Allow frontend origin
+app.use(cors()); // Allow frontend origin
 app.use(bodyParser.json());
 
 // MongoDB connection
