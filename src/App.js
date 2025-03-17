@@ -2,10 +2,24 @@ import React, { useState, useEffect } from "react";
 import { HfInference } from "@huggingface/inference";
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
-import { BrowserRouter as Router, Route, Routes, useSearchParams } from "react-router-dom"; // Add routing
+import { BrowserRouter as Router, Route, Routes, useSearchParams } from "react-router-dom";
 import styles from "./App.module.css";
 
 const hf = new HfInference("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");
+
+// Password validation function (same as backend)
+const isValidPassword = (password) => {
+  const minLength = 8;
+  const hasLetter = /[a-zA-Z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  return password.length >= minLength && hasLetter && hasNumber;
+};
+
+// Email validation function (same as backend)
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
 
 function Summarizer() {
   const [text, setText] = useState("");
@@ -89,6 +103,14 @@ function Auth() {
       return setMessage("Please complete the CAPTCHA.");
     }
 
+    // Client-side validation
+    if (!isValidEmail(email)) {
+      return setMessage("Please enter a valid email address.");
+    }
+    if (!isValidPassword(password)) {
+      return setMessage("Password must be at least 8 characters long and include letters and numbers.");
+    }
+
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/register", {
         username,
@@ -111,6 +133,11 @@ function Auth() {
   const handleLogin = async () => {
     if (!captchaToken) {
       return setMessage("Please complete the CAPTCHA.");
+    }
+
+    // Optional: Validate login email format
+    if (!isValidEmail(loginEmail)) {
+      return setMessage("Please enter a valid email address.");
     }
 
     try {
@@ -218,7 +245,6 @@ function Auth() {
   );
 }
 
-// New Verify Component
 function Verify() {
   const [message, setMessage] = useState("Verifying your email...");
   const [searchParams] = useSearchParams();
@@ -227,15 +253,15 @@ function Verify() {
     const verifyEmail = async () => {
       const token = searchParams.get("token");
       if (!token) {
-        setMessage("Invalid verification link.");
+        setMessage("Invalid verification link. No token found.");
         return;
       }
 
       try {
         const response = await axios.get(`https://ai-note-summarizer.onrender.com/verify?token=${token}`);
-        setMessage(response.data); // e.g., "Email verified successfully"
+        setMessage(response.data);
       } catch (error) {
-        const errorMsg = error.response?.data || "Verification failed. The link may be invalid or expired.";
+        const errorMsg = error.response?.data || "Verification failed. Please try again.";
         setMessage(errorMsg);
         console.error("Verification error:", error);
       }
@@ -260,7 +286,6 @@ function App() {
   return (
     <Router>
       <div>
-        {/* Only show the switch button on the main pages */}
         <Routes>
           <Route
             path="/"

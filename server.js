@@ -4,12 +4,12 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer'); // For email verification
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = 5000;
 
-app.use(cors());
+app.use(cors({ origin: "http://localhost:3000" })); // Allow frontend origin
 app.use(bodyParser.json());
 
 // MongoDB connection
@@ -18,90 +18,107 @@ mongoose.connect(atlasURI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('Failed to connect to MongoDB Atlas:', err));
 
-// User schema with email
+// User schema
 const userSchema = new mongoose.Schema({
   username: String,
-  email: { type: String, unique: true }, // Ensure email is unique
+  email: { type: String, unique: true },
   password: String,
   additionalInfo: String,
-  verified: { type: Boolean, default: false }, // Email verification status
-  verificationToken: String, // Token for email verification
+  verified: { type: Boolean, default: false },
+  verificationToken: String,
 });
 
 userSchema.index({ username: 1 }, { unique: true });
-userSchema.index({ email: 1 }, { unique: true }); // Ensure email is unique
+userSchema.index({ email: 1 }, { unique: true });
 const User = mongoose.model('User', userSchema);
 
-// Secret key for bypassing CAPTCHA
+// CAPTCHA bypass secret
 const CAPTCHA_BYPASS_SECRET = 'my-secret-bypass-token';
 
-// Nodemailer setup for email verification
+// Nodemailer setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'lampadarisconstantine@gmail.com', // Your Gmail address
-    pass: 'smtr gceq ugov eehi', // Replace with your Gmail App Password
+    user: 'lampadarisconstantine@gmail.com',
+    pass: 'your-app-password-here', // Replace with your App Password
   },
 });
 
-// Verify transporter setup on startup
 transporter.verify((error, success) => {
-  if (error) {
-    console.error('Email transporter verification failed:', error);
-  } else {
-    console.log('Email transporter is ready to send emails');
-  }
+  if (error) console.error('Email transporter error:', error);
+  else console.log('Email transporter is ready');
 });
 
-// Send verification email with error handling
+// Password validation function
+const isValidPassword = (password) => {
+  const minLength = 8;
+  const hasLetter = /[a-zA-Z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  return password.length >= minLength && hasLetter && hasNumber;
+};
+
+// Email validation function (basic regex)
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Send verification email
 const sendVerificationEmail = async (email, token) => {
   const mailOptions = {
-    from: 'God <lampadarisconstantine@gmail.com>', // Fixed 'from' field with display name
+    from: 'God <lampadarisconstantine@gmail.com>',
     to: email,
     subject: 'Verify Your Email',
     html: `<p>Click <a href="https://ai-note-summarizer.onrender.com/verify?token=${token}">here</a> to verify your email.</p>`,
   };
- 
+
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Verification email sent to ${email}: ${info.response}`);
+    await transporter.sendMail(mailOptions);
+    console.log(`Verification email sent to ${email}`);
   } catch (error) {
-    console.error('Error sending verification email:', error);
-    throw error; // Re-throw to handle in the endpoint
+    console.error('Error sending email:', error);
+    throw error;
   }
 };
 
-// Register endpoint with error handling
+// Register endpoint
 app.post('/register', async (req, res) => {
   const { username, email, password, additionalInfo, captchaToken } = req.body;
 
-  // Skip CAPTCHA check if using bypass token
   if (captchaToken !== CAPTCHA_BYPASS_SECRET) {
     console.log('Skipping CAPTCHA verification');
   }
 
   try {
-    // Check if the email already exists
+    // Validate email
+    if (!isValidEmail(email)) {
+      return res.status(400).send('Invalid email format');
+    }
+
+    // Validate password
+    if (!isValidPassword(password)) {
+      return res.status(400).send('Password must be at least 8 characters long and include letters and numbers');
+    }
+
+    // Check if email exists
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
       return res.status(400).send('Email already registered');
     }
 
-    // Check if the username already exists
+    // Check if username exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).send('Username already taken');
     }
 
-    // Hash the password
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate a verification token
-    const verificationToken = jwt.sign({ email }, 'verificationSecret', {
-      expiresIn: '1h', // Token expires in 1 hour
-    });
+    // Generate verification token
+    const verificationToken = jwt.sign({ email }, 'verificationSecret', { expiresIn: '1h' });
 
-    // Save the user with the verification token
+    // Save user
     const user = new User({
       username,
       email,
@@ -121,12 +138,11 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Verify endpoint
+// Verify endpoint (unchanged)
 app.get('/verify', async (req, res) => {
   const { token } = req.query;
 
   try {
-    // Verify the token
     const decoded = jwt.verify(token, 'verificationSecret');
     const user = await User.findOne({ email: decoded.email });
 
@@ -134,42 +150,35 @@ app.get('/verify', async (req, res) => {
       return res.status(400).send('Invalid token');
     }
 
-    // Mark the user as verified
     user.verified = true;
-    user.verificationToken = undefined; // Clear the token
+    user.verificationToken = undefined;
     await user.save();
 
     res.send('Email verified successfully');
   } catch (error) {
-    console.error('Verification error:', error);
     res.status(400).send('Invalid or expired token');
   }
 });
 
-// Login endpoint
+// Login endpoint (unchanged)
 app.post('/login', async (req, res) => {
   const { email, password, captchaToken } = req.body;
 
-  // Skip CAPTCHA check if using bypass token
   if (captchaToken !== CAPTCHA_BYPASS_SECRET) {
     console.log('Skipping CAPTCHA verification');
   }
 
   try {
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) return res.status(400).send('User not found');
 
-    // Check if the user is verified
     if (!user.verified) {
       return res.status(400).send('Please verify your email first');
     }
 
-    // Validate password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).send('Invalid password');
 
-    // Generate JWT token
     const token = jwt.sign({ email }, 'secretkey');
     res.json({ token });
   } catch (error) {
