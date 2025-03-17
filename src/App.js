@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; 
 import { HfInference } from "@huggingface/inference";
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha"; // Import ReCAPTCHA
@@ -88,7 +88,7 @@ function Auth() {
     if (!captchaToken) {
       return setMessage("Please complete the CAPTCHA.");
     }
-  
+
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/register", {
         username,
@@ -102,12 +102,12 @@ function Auth() {
       console.error("Registration failed:", error);
     }
   };
-  
+
   const handleLogin = async () => {
     if (!captchaToken) {
       return setMessage("Please complete the CAPTCHA.");
     }
-  
+
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/login", {
         username: loginUsername,
@@ -120,7 +120,6 @@ function Auth() {
       console.error("Login failed:", error);
     }
   };
-  
 
   return (
     <div className={styles.container}>
