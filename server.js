@@ -39,24 +39,39 @@ const CAPTCHA_BYPASS_SECRET = 'my-secret-bypass-token';
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'lampadarisconstantine@gmail.com', // Replace with your email
-    pass: 'l200520072009', // Replace with your email password or app-specific password
+    user: 'lampadarisconstantine@gmail.com', // Your Gmail address
+    pass: 'smtr gceq ugov eehi', // Replace with your Gmail App Password
   },
 });
 
-// Send verification email
+// Verify transporter setup on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('Email transporter verification failed:', error);
+  } else {
+    console.log('Email transporter is ready to send emails');
+  }
+});
+
+// Send verification email with error handling
 const sendVerificationEmail = async (email, token) => {
   const mailOptions = {
-    from: 'god',
+    from: 'God <lampadarisconstantine@gmail.com>', // Fixed 'from' field with display name
     to: email,
     subject: 'Verify Your Email',
     html: `<p>Click <a href="http://localhost:3000/verify?token=${token}">here</a> to verify your email.</p>`,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Verification email sent to ${email}: ${info.response}`);
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    throw error; // Re-throw to handle in the endpoint
+  }
 };
 
-// Register endpoint
+// Register endpoint with error handling
 app.post('/register', async (req, res) => {
   const { username, email, password, additionalInfo, captchaToken } = req.body;
 
@@ -65,40 +80,45 @@ app.post('/register', async (req, res) => {
     console.log('Skipping CAPTCHA verification');
   }
 
-  // Check if the email already exists
-  const existingEmail = await User.findOne({ email });
-  if (existingEmail) {
-    return res.status(400).send('Email already registered');
+  try {
+    // Check if the email already exists
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).send('Email already registered');
+    }
+
+    // Check if the username already exists
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).send('Username already taken');
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Generate a verification token
+    const verificationToken = jwt.sign({ email }, 'verificationSecret', {
+      expiresIn: '1h', // Token expires in 1 hour
+    });
+
+    // Save the user with the verification token
+    const user = new User({
+      username,
+      email,
+      password: hashedPassword,
+      additionalInfo,
+      verificationToken,
+    });
+    await user.save();
+
+    // Send verification email
+    await sendVerificationEmail(email, verificationToken);
+
+    res.status(201).send('User registered. Please check your email to verify your account.');
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).send('Failed to register user or send verification email');
   }
-
-  // Check if the username already exists
-  const existingUser = await User.findOne({ username });
-  if (existingUser) {
-    return res.status(400).send('Username already taken');
-  }
-
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Generate a verification token
-  const verificationToken = jwt.sign({ email }, 'verificationSecret', {
-    expiresIn: '1h', // Token expires in 1 hour
-  });
-
-  // Save the user with the verification token
-  const user = new User({
-    username,
-    email,
-    password: hashedPassword,
-    additionalInfo,
-    verificationToken,
-  });
-  await user.save();
-
-  // Send verification email
-  await sendVerificationEmail(email, verificationToken);
-
-  res.status(201).send('User registered. Please check your email to verify your account.');
 });
 
 // Verify endpoint
@@ -121,6 +141,7 @@ app.get('/verify', async (req, res) => {
 
     res.send('Email verified successfully');
   } catch (error) {
+    console.error('Verification error:', error);
     res.status(400).send('Invalid or expired token');
   }
 });
@@ -134,22 +155,27 @@ app.post('/login', async (req, res) => {
     console.log('Skipping CAPTCHA verification');
   }
 
-  // Find user by email
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).send('User not found');
+  try {
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).send('User not found');
 
-  // Check if the user is verified
-  if (!user.verified) {
-    return res.status(400).send('Please verify your email first');
+    // Check if the user is verified
+    if (!user.verified) {
+      return res.status(400).send('Please verify your email first');
+    }
+
+    // Validate password
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).send('Invalid password');
+
+    // Generate JWT token
+    const token = jwt.sign({ email }, 'secretkey');
+    res.json({ token });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).send('Server error during login');
   }
-
-  // Validate password
-  const validPassword = await bcrypt.compare(password, user.password);
-  if (!validPassword) return res.status(400).send('Invalid password');
-
-  // Generate JWT token
-  const token = jwt.sign({ email }, 'secretkey');
-  res.json({ token });
 });
 
 app.listen(PORT, () => {
