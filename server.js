@@ -66,15 +66,15 @@ const isValidEmail = (email) => {
 // Send verification email
 const sendVerificationEmail = async (email, token) => {
   const mailOptions = {
-    from: 'God <lampadarisconstantine@gmail.com>',
+    from: 'ai-note-summarizer <lampadarisconstantine@gmail.com>',
     to: email,
     subject: 'Verify Your Email',
     html: `<p>Click <a href="https://ai-note-summarizer.onrender.com/verify?token=${token}">here</a> to verify your email.</p>
-    <img 
-    src="https://i.ytimg.com/vi/vH8kYVahdrU/maxresdefault.jpg" 
-    alt="Verification Success" 
-    style="display: block; margin: 20px auto; width: 100px; height: auto;"
-  />`,
+      <img 
+      src="https://i.imgur.com/oUwaflG.jpeg" 
+      alt="Verification Success" 
+      style="display: block; margin: 20px auto; width: 100px; height: auto;"
+    />`,
   };
 
   try {
