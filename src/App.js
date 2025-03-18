@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; // Added useEffect for Verify
 import { HfInference } from "@huggingface/inference";
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -26,7 +26,8 @@ function Summarizer() {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [savedSummaries, setSavedSummaries] = useState([]);
-  const [showPastSummaries, setShowPastSummaries] = useState(false);
+  const [showHistory, setShowHistory] = useState(false); // Toggle history box
+  const [pastSummaries, setPastSummaries] = useState([]); // Store fetched summaries
 
   const handleSummarize = async () => {
     if (!text) return alert("Please enter some text!");
@@ -38,13 +39,14 @@ function Summarizer() {
         model: "facebook/bart-large-cnn",
         inputs: text,
       });
-      setSummary(result.summary_text);
-      setSavedSummaries([...savedSummaries, result.summary_text]);
+      const summaryText = result.summary_text;
+      setSummary(summaryText);
+      setSavedSummaries([...savedSummaries, summaryText]);
 
       if (token) {
         await axios.post("https://ai-note-summarizer.onrender.com/summaries", {
           token,
-          summary: result.summary_text,
+          summary: summaryText,
         });
       }
     } catch (error) {
@@ -54,25 +56,26 @@ function Summarizer() {
     setLoading(false);
   };
 
-  const handleShowPastSummaries = async () => {
+  const toggleHistory = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Please log in to view past summaries.");
       return;
     }
 
-    try {
-      const response = await axios.get("https://ai-note-summarizer.onrender.com/summaries", {
-        params: { token },
-      });
-      const summaries = response.data.map((item, index) => 
-        `${index + 1}. ${item.text} (Saved on: ${new Date(item.createdAt).toLocaleString()})`
-      ).join('\n');
-      alert(summaries || "No past summaries found.");
-    } catch (error) {
-      console.error("Error fetching past summaries:", error);
-      alert("Failed to fetch past summaries.");
+    if (!showHistory) {
+      try {
+        const response = await axios.get("https://ai-note-summarizer.onrender.com/summaries", {
+          params: { token },
+        });
+        setPastSummaries(response.data);
+      } catch (error) {
+        console.error("Error fetching past summaries:", error);
+        alert("Failed to fetch past summaries.");
+        return;
+      }
     }
+    setShowHistory(!showHistory); // Toggle visibility
   };
 
   return (
@@ -80,10 +83,9 @@ function Summarizer() {
       <h1 className={styles.title}>AI Note Summarizer</h1>
       <button
         className={styles.pastSummariesButton}
-        onClick={handleShowPastSummaries}
-        style={{ position: 'absolute', top: '10px', right: '10px' }}
+        onClick={toggleHistory}
       >
-        Past Summaries
+        {showHistory ? "Hide History" : "Past Summaries"}
       </button>
       <div className={styles.card}>
         <div className={styles.leftSection}>
@@ -113,12 +115,29 @@ function Summarizer() {
             </ul>
           )}
         </div>
+        {/* History Box */}
+        <div className={`${styles.historyBox} ${showHistory ? "" : styles.hidden}`}>
+          <h2 className={styles.subtitle}>Past Summaries</h2>
+          {pastSummaries.length === 0 ? (
+            <p className={styles.noSummaries}>No past summaries found.</p>
+          ) : (
+            <ul className={styles.summaryList}>
+              {pastSummaries.map((item, index) => (
+                <li key={index} className={styles.summaryItem}>
+                  <strong>Summary {index + 1}:</strong>
+                  <p>{item.text}</p>
+                  <small>{new Date(item.createdAt).toLocaleString()}</small>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function Auth() {
+function Auth({ onLogin }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -128,7 +147,7 @@ function Auth() {
   const [showLogin, setShowLogin] = useState(true);
   const [captchaToken, setCaptchaToken] = useState("");
 
-  const recaptchaSiteKey = "6LcoWPgqAAAAAALZ1qlOO-uc34kWOU6uAEuk8vvI";
+  const recaptchaSiteKey = "6Lc0TfYqAAAAAPrQckrIuryDDuUHg5pQqr_w5Sbs";
 
   const handleCaptchaChange = (token) => {
     setCaptchaToken(token);
@@ -183,6 +202,7 @@ function Auth() {
       setLoginEmail("");
       setLoginPassword("");
       setCaptchaToken("");
+      onLogin();
     } catch (error) {
       const errorMsg = error.response?.data || "Login failed. Please try again.";
       setMessage(errorMsg);
@@ -314,6 +334,12 @@ function Verify() {
 
 function App() {
   const [showSummarizer, setShowSummarizer] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setShowSummarizer(true);
+  };
 
   return (
     <Router>
@@ -326,10 +352,11 @@ function App() {
                 <button
                   className={styles.switchButton}
                   onClick={() => setShowSummarizer(!showSummarizer)}
+                  disabled={isLoggedIn}
                 >
-                  Switch to {showSummarizer ? "Auth" : "Summarizer"}
+                  {isLoggedIn ? "You are logged in" : (showSummarizer ? "Switch to Auth" : "Switch to Summarizer")}
                 </button>
-                {showSummarizer ? <Summarizer /> : <Auth />}
+                {showSummarizer ? <Summarizer /> : <Auth onLogin={handleLogin} />}
               </>
             }
           />
