@@ -21,13 +21,14 @@ const isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
-function Summarizer({ onLogout }) { // Added onLogout prop
+function Summarizer({ onLogout }) {
   const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [savedSummaries, setSavedSummaries] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [pastSummaries, setPastSummaries] = useState([]);
+  const isLoggedIn = !!localStorage.getItem("token"); // Check login status
 
   const handleSummarize = async () => {
     if (!text) return alert("Please enter some text!");
@@ -79,11 +80,11 @@ function Summarizer({ onLogout }) { // Added onLogout prop
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Clear token
-    setSavedSummaries([]); // Optional: Clear session summaries
-    setPastSummaries([]); // Optional: Clear past summaries
-    setShowHistory(false); // Hide history box
-    onLogout(); // Update App state
+    localStorage.removeItem("token");
+    setSavedSummaries([]);
+    setPastSummaries([]);
+    setShowHistory(false);
+    onLogout();
   };
 
   return (
@@ -95,12 +96,14 @@ function Summarizer({ onLogout }) { // Added onLogout prop
       >
         {showHistory ? "Hide History" : "Past Summaries"}
       </button>
-      <button
-        className={styles.logoutButton}
-        onClick={handleLogout}
-      >
-        Logout
-      </button>
+      {isLoggedIn && (
+        <button
+          className={styles.logoutButton}
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      )}
       <div className={styles.card}>
         <div className={styles.leftSection}>
           <textarea
@@ -356,7 +359,7 @@ function App() {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setShowSummarizer(true); // Stay on Summarizer, but logged out
+    setShowSummarizer(true);
   };
 
   return (
