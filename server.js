@@ -69,7 +69,12 @@ const sendVerificationEmail = async (email, token) => {
     from: 'God <lampadarisconstantine@gmail.com>',
     to: email,
     subject: 'Verify Your Email',
-    html: `<p>Click <a href="https://ai-note-summarizer.onrender.com/verify?token=${token}">here</a> to verify your email.</p>`,
+    html: `<p>Click <a href="https://ai-note-summarizer.onrender.com/verify?token=${token}">here</a> to verify your email.</p>
+    <img 
+    src="https://i.ytimg.com/vi/vH8kYVahdrU/maxresdefault.jpg" 
+    alt="Verification Success" 
+    style="display: block; margin: 20px auto; width: 100px; height: auto;"
+  />`,
   };
 
   try {
