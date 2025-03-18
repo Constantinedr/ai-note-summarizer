@@ -28,7 +28,8 @@ function Summarizer({ onLogout }) {
   const [savedSummaries, setSavedSummaries] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [pastSummaries, setPastSummaries] = useState([]);
-  const isLoggedIn = !!localStorage.getItem("token"); // Check login status
+  const [searchQuery, setSearchQuery] = useState(""); // Search bar state
+  const isLoggedIn = !!localStorage.getItem("token");
 
   const handleSummarize = async () => {
     if (!text) return alert("Please enter some text!");
@@ -87,6 +88,11 @@ function Summarizer({ onLogout }) {
     onLogout();
   };
 
+  // Filter past summaries based on search query
+  const filteredSummaries = pastSummaries.filter((item) =>
+    item.text.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>AI Note Summarizer</h1>
@@ -134,11 +140,18 @@ function Summarizer({ onLogout }) {
         </div>
         <div className={`${styles.historyBox} ${showHistory ? "" : styles.hidden}`}>
           <h2 className={styles.subtitle}>Past Summaries</h2>
-          {pastSummaries.length === 0 ? (
+          <input
+            type="text"
+            className={styles.searchBar}
+            placeholder="Search summaries..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {filteredSummaries.length === 0 ? (
             <p className={styles.noSummaries}>No past summaries found.</p>
           ) : (
-            <ul className={styles.summaryList}>
-              {pastSummaries.map((item, index) => (
+            <ul className={styles.pastSummaryList}>
+              {filteredSummaries.map((item, index) => (
                 <li key={index} className={styles.summaryItem}>
                   <strong>Summary {index + 1}:</strong>
                   <p>{item.text}</p>
@@ -163,7 +176,7 @@ function Auth({ onLogin }) {
   const [showLogin, setShowLogin] = useState(true);
   const [captchaToken, setCaptchaToken] = useState("");
 
-  const recaptchaSiteKey = "6Lc0TfYqAAAAAPrQckrIuryDDuUHg5pQqr_w5Sbs";
+  const recaptchaSiteKey = "6LcoWPgqAAAAAALZ1qlOO-uc34kWOU6uAEuk8vvI";
 
   const handleCaptchaChange = (token) => {
     setCaptchaToken(token);
