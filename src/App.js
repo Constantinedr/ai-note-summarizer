@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { HfInference } from "@huggingface/inference";
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
-import { BrowserRouter as Router, Route, Routes, useSearchParams, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useSearchParams } from "react-router-dom";
 import styles from "./App.module.css";
 
 const hf = new HfInference("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");
 
+// Password validation function (same as backend)
 const isValidPassword = (password) => {
   const minLength = 8;
   const hasLetter = /[a-zA-Z]/.test(password);
@@ -14,6 +15,7 @@ const isValidPassword = (password) => {
   return password.length >= minLength && hasLetter && hasNumber;
 };
 
+// Email validation function (same as backend)
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -24,24 +26,7 @@ function Summarizer() {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [savedSummaries, setSavedSummaries] = useState([]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchSummaries = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        try {
-          const response = await axios.get("https://ai-note-summarizer.onrender.com/summaries", {
-            params: { token },
-          });
-          setSavedSummaries(response.data);
-        } catch (error) {
-          console.error("Error fetching summaries:", error);
-        }
-      }
-    };
-    fetchSummaries();
-  }, []);
+  const [showPastSummaries, setShowPastSummaries] = useState(false);
 
   const handleSummarize = async () => {
     if (!text) return alert("Please enter some text!");
@@ -54,14 +39,13 @@ function Summarizer() {
         inputs: text,
       });
       setSummary(result.summary_text);
+      setSavedSummaries([...savedSummaries, result.summary_text]);
+
       if (token) {
         await axios.post("https://ai-note-summarizer.onrender.com/summaries", {
           token,
           summary: result.summary_text,
         });
-        setSavedSummaries([...savedSummaries, { text: result.summary_text, createdAt: new Date() }]);
-      } else {
-        setSavedSummaries([...savedSummaries, result.summary_text]); // Local only if not logged in
       }
     } catch (error) {
       console.error("Error:", error);
@@ -70,11 +54,36 @@ function Summarizer() {
     setLoading(false);
   };
 
+  const handleShowPastSummaries = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in to view past summaries.");
+      return;
+    }
+
+    try {
+      const response = await axios.get("https://ai-note-summarizer.onrender.com/summaries", {
+        params: { token },
+      });
+      const summaries = response.data.map((item, index) => 
+        `${index + 1}. ${item.text} (Saved on: ${new Date(item.createdAt).toLocaleString()})`
+      ).join('\n');
+      alert(summaries || "No past summaries found.");
+    } catch (error) {
+      console.error("Error fetching past summaries:", error);
+      alert("Failed to fetch past summaries.");
+    }
+  };
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>AI Note Summarizer</h1>
-      <button className={styles.switchButton} onClick={() => navigate("/profile")}>
-        Go to Profile
+      <button
+        className={styles.pastSummariesButton}
+        onClick={handleShowPastSummaries}
+        style={{ position: 'absolute', top: '10px', right: '10px' }}
+      >
+        Past Summaries
       </button>
       <div className={styles.card}>
         <div className={styles.leftSection}>
@@ -98,8 +107,7 @@ function Summarizer() {
               {savedSummaries.map((item, index) => (
                 <li key={index} className={styles.summaryItem}>
                   <strong>Summary {index + 1}:</strong>
-                  <p>{typeof item === 'string' ? item : item.text}</p>
-                  {item.createdAt && <small>{new Date(item.createdAt).toLocaleString()}</small>}
+                  <p>{item}</p>
                 </li>
               ))}
             </ul>
@@ -120,7 +128,7 @@ function Auth() {
   const [showLogin, setShowLogin] = useState(true);
   const [captchaToken, setCaptchaToken] = useState("");
 
-  const recaptchaSiteKey = "6Lc0TfYqAAAAAPrQckrIuryDDuUHg5pQqr_w5Sbs";
+  const recaptchaSiteKey = "6LcoWPgqAAAAAALZ1qlOO-uc34kWOU6uAEuk8vvI";
 
   const handleCaptchaChange = (token) => {
     setCaptchaToken(token);
@@ -304,106 +312,6 @@ function Verify() {
   );
 }
 
-// Feature 4: Profile Component
-function Profile() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [additionalInfo, setAdditionalInfo] = useState("");
-  const [message, setMessage] = useState("");
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setMessage("Please log in to view your profile.");
-        return;
-      }
-
-      try {
-        const response = await axios.get("https://ai-note-summarizer.onrender.com/profile", {
-          params: { token },
-        });
-        setUsername(response.data.username);
-        setEmail(response.data.email);
-        setAdditionalInfo(response.data.additionalInfo || "");
-      } catch (error) {
-        setMessage("Failed to load profile. Please log in again.");
-        console.error("Error fetching profile:", error);
-      }
-    };
-    fetchProfile();
-  }, []);
-
-  const handleUpdate = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setMessage("Please log in to update your profile.");
-      return;
-    }
-
-    try {
-      const response = await axios.put("https://ai-note-summarizer.onrender.com/profile", {
-        token,
-        username,
-        additionalInfo,
-      });
-      setMessage(response.data);
-    } catch (error) {
-      const errorMsg = error.response?.data || "Failed to update profile.";
-      setMessage(errorMsg);
-      console.error("Error updating profile:", error);
-    }
-  };
-
-  return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Your Profile</h1>
-        <button className={styles.switchButton} onClick={() => navigate("/")}>
-          Back to Summarizer
-        </button>
-        <div className={styles.section}>
-          <div className={styles.inputWrapper}>
-            <label>Username:</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={styles.prettyInput}
-            />
-          </div>
-          <br />
-          <div className={styles.inputWrapper}>
-            <label>Email:</label>
-            <input
-              type="email"
-              value={email}
-              disabled // Email is typically not editable
-              className={styles.prettyInput}
-            />
-          </div>
-          <br />
-          <div className={styles.inputWrapper}>
-            <label>Additional Info:</label>
-            <textarea
-              value={additionalInfo}
-              onChange={(e) => setAdditionalInfo(e.target.value)}
-              className={styles.textarea}
-              rows="3"
-              placeholder="Tell us about yourself..."
-            />
-          </div>
-          <button onClick={handleUpdate} className={styles.button}>
-            Update Profile
-          </button>
-        </div>
-        {message && <p className={styles.message}>{message}</p>}
-      </div>
-    </div>
-  );
-}
-
 function App() {
   const [showSummarizer, setShowSummarizer] = useState(true);
 
@@ -426,7 +334,6 @@ function App() {
             }
           />
           <Route path="/verify" element={<Verify />} />
-          <Route path="/profile" element={<Profile />} /> {/* Added for Feature 4 */}
         </Routes>
       </div>
     </Router>
