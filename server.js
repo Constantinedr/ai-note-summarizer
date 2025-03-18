@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
   additionalInfo: String,
   verified: { type: Boolean, default: false },
   verificationToken: String,
-  summaries: [{ text: String, createdAt: { type: Date, default: Date.now } }], // Added for Feature 2
+  summaries: [{ text: String, createdAt: { type: Date, default: Date.now } }], // Added for summaries
 });
 
 userSchema.index({ username: 1 }, { unique: true });
@@ -177,7 +177,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Feature 2: Save Summary Endpoint
+// Save Summary Endpoint
 app.post('/summaries', async (req, res) => {
   const { token, summary } = req.body;
   try {
@@ -194,7 +194,7 @@ app.post('/summaries', async (req, res) => {
   }
 });
 
-// Feature 2: Get Summaries Endpoint
+// Get Summaries Endpoint
 app.get('/summaries', async (req, res) => {
   const { token } = req.query;
   try {
@@ -206,48 +206,6 @@ app.get('/summaries', async (req, res) => {
   } catch (error) {
     console.error('Error fetching summaries:', error);
     res.status(500).send('Failed to fetch summaries');
-  }
-});
-
-// Feature 4: Get Profile Endpoint
-app.get('/profile', async (req, res) => {
-  const { token } = req.query;
-  try {
-    const decoded = jwt.verify(token, 'secretkey');
-    const user = await User.findOne({ email: decoded.email });
-    if (!user) return res.status(401).send('Unauthorized');
-
-    res.json({
-      username: user.username,
-      email: user.email,
-      additionalInfo: user.additionalInfo,
-    });
-  } catch (error) {
-    console.error('Error fetching profile:', error);
-    res.status(500).send('Failed to fetch profile');
-  }
-});
-
-// Feature 4: Update Profile Endpoint
-app.put('/profile', async (req, res) => {
-  const { token, username, additionalInfo } = req.body;
-  try {
-    const decoded = jwt.verify(token, 'secretkey');
-    const user = await User.findOne({ email: decoded.email });
-    if (!user) return res.status(401).send('Unauthorized');
-
-    if (username && username !== user.username) {
-      const existingUser = await User.findOne({ username });
-      if (existingUser) return res.status(400).send('Username already taken');
-      user.username = username;
-    }
-    user.additionalInfo = additionalInfo !== undefined ? additionalInfo : user.additionalInfo;
-    await user.save();
-
-    res.send('Profile updated successfully');
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    res.status(500).send('Failed to update profile');
   }
 });
 
