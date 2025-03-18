@@ -18,7 +18,7 @@ mongoose.connect(atlasURI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('Failed to connect to MongoDB Atlas:', err));
 
-// User schema
+// User schema with summaries field
 const userSchema = new mongoose.Schema({
   username: String,
   email: { type: String, unique: true },
@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema({
   additionalInfo: String,
   verified: { type: Boolean, default: false },
   verificationToken: String,
+  summaries: [{ text: String, createdAt: { type: Date, default: Date.now } }], // Added for Feature 2
 });
 
 userSchema.index({ username: 1 }, { unique: true });
@@ -40,7 +41,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'lampadarisconstantine@gmail.com',
-    pass: 'smtr gceq ugov eehi', // Replace with your App Password
+    pass: 'smtr gceq ugov eehi', // Your App Password
   },
 });
 
@@ -90,35 +91,26 @@ app.post('/register', async (req, res) => {
   }
 
   try {
-    // Validate email
     if (!isValidEmail(email)) {
       return res.status(400).send('Invalid email format');
     }
-
-    // Validate password
     if (!isValidPassword(password)) {
       return res.status(400).send('Password must be at least 8 characters long and include letters and numbers');
     }
 
-    // Check if email exists
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
       return res.status(400).send('Email already registered');
     }
 
-    // Check if username exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).send('Username already taken');
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Generate verification token
     const verificationToken = jwt.sign({ email }, 'verificationSecret', { expiresIn: '1h' });
 
-    // Save user
     const user = new User({
       username,
       email,
@@ -128,9 +120,7 @@ app.post('/register', async (req, res) => {
     });
     await user.save();
 
-    // Send verification email
     await sendVerificationEmail(email, verificationToken);
-
     res.status(201).send('User registered. Please check your email to verify your account.');
   } catch (error) {
     console.error('Registration error:', error);
@@ -138,7 +128,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Verify endpoint (unchanged)
+// Verify endpoint
 app.get('/verify', async (req, res) => {
   const { token } = req.query;
 
@@ -160,7 +150,7 @@ app.get('/verify', async (req, res) => {
   }
 });
 
-// Login endpoint (unchanged)
+// Login endpoint
 app.post('/login', async (req, res) => {
   const { email, password, captchaToken } = req.body;
 
@@ -184,6 +174,80 @@ app.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).send('Server error during login');
+  }
+});
+
+// Feature 2: Save Summary Endpoint
+app.post('/summaries', async (req, res) => {
+  const { token, summary } = req.body;
+  try {
+    const decoded = jwt.verify(token, 'secretkey');
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) return res.status(401).send('Unauthorized');
+
+    user.summaries.push({ text: summary });
+    await user.save();
+    res.send('Summary saved successfully');
+  } catch (error) {
+    console.error('Error saving summary:', error);
+    res.status(500).send('Failed to save summary');
+  }
+});
+
+// Feature 2: Get Summaries Endpoint
+app.get('/summaries', async (req, res) => {
+  const { token } = req.query;
+  try {
+    const decoded = jwt.verify(token, 'secretkey');
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) return res.status(401).send('Unauthorized');
+
+    res.json(user.summaries);
+  } catch (error) {
+    console.error('Error fetching summaries:', error);
+    res.status(500).send('Failed to fetch summaries');
+  }
+});
+
+// Feature 4: Get Profile Endpoint
+app.get('/profile', async (req, res) => {
+  const { token } = req.query;
+  try {
+    const decoded = jwt.verify(token, 'secretkey');
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) return res.status(401).send('Unauthorized');
+
+    res.json({
+      username: user.username,
+      email: user.email,
+      additionalInfo: user.additionalInfo,
+    });
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).send('Failed to fetch profile');
+  }
+});
+
+// Feature 4: Update Profile Endpoint
+app.put('/profile', async (req, res) => {
+  const { token, username, additionalInfo } = req.body;
+  try {
+    const decoded = jwt.verify(token, 'secretkey');
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) return res.status(401).send('Unauthorized');
+
+    if (username && username !== user.username) {
+      const existingUser = await User.findOne({ username });
+      if (existingUser) return res.status(400).send('Username already taken');
+      user.username = username;
+    }
+    user.additionalInfo = additionalInfo !== undefined ? additionalInfo : user.additionalInfo;
+    await user.save();
+
+    res.send('Profile updated successfully');
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).send('Failed to update profile');
   }
 });
 
