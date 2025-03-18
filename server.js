@@ -70,13 +70,13 @@ const sendVerificationEmail = async (email, token) => {
     to: email,
     subject: 'Verify Your Email',
     html: `<p>Click <a href="https://ai-note-summarizer.onrender.com/verify?token=${token}">here</a> to verify your email.</p>
-    <p>Welcome aboard! Once verified, you’re all set to start summarizing notes.</p>
-    <p><img 
-      src="https://images.unsplash.com/photo-1615796153287-98e599a8a3b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" 
-      alt="Cute Cat - Verification Success" 
-      style="display: block; margin: 20px auto; width: 200px; height: auto;"
-    /></p>`,
+      <img 
+      src="https://i.imgur.com/oUwaflG.jpeg" 
+      alt="Verification Success" 
+      style="display: block; margin: 20px auto; width: 100px; height: auto;"
+    />`,
   };
+
   try {
     await transporter.sendMail(mailOptions);
     console.log(`Verification email sent to ${email}`);
