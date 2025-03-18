@@ -169,7 +169,7 @@ body {
 /* Logout Button */
 .logoutButton {
   position: absolute;
-  top: 15px;
+  top: 60px;
   left: 20px;
   padding: 10px 20px;
   background-color: #e53e3e;
@@ -218,13 +218,13 @@ body {
   flex-direction: column;
   align-items: center;
   width: 30%;
-  max-height: 400px;
+  max-height: 100%;
   background-color: #2d3748;
   border-left: 1px solid #4a5568;
   padding: 20px;
   position: absolute;
   right: 0;
-  top: 0;
+  top: 40;
   bottom: 0;
 }
 
@@ -259,7 +259,7 @@ body {
   border: none;
   resize: none;
   font-size: 1.1rem;
-  height: 250px; /* Increased height */
+  height: 400px; /* Increased height */
 }
 
 .textarea:focus {
