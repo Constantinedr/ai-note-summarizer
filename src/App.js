@@ -7,7 +7,7 @@ import styles from "./App.module.css";
 
 const hf = new HfInference("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");
 
-// Password validation function (same as backend)
+// Password and email validation functions
 const isValidPassword = (password) => {
   const minLength = 8;
   const hasLetter = /[a-zA-Z]/.test(password);
@@ -15,7 +15,6 @@ const isValidPassword = (password) => {
   return password.length >= minLength && hasLetter && hasNumber;
 };
 
-// Email validation function (same as backend)
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -28,7 +27,7 @@ function Summarizer({ onLogout }) {
   const [savedSummaries, setSavedSummaries] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [pastSummaries, setPastSummaries] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // Search bar state
+  const [searchQuery, setSearchQuery] = useState("");
   const isLoggedIn = !!localStorage.getItem("token");
 
   const handleSummarize = async () => {
@@ -88,7 +87,6 @@ function Summarizer({ onLogout }) {
     onLogout();
   };
 
-  // Filter past summaries based on search query
   const filteredSummaries = pastSummaries.filter((item) =>
     item.text.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -96,21 +94,15 @@ function Summarizer({ onLogout }) {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>AI Note Summarizer</h1>
-      <button
-        className={styles.pastSummariesButton}
-        onClick={toggleHistory}
-      >
+      <button className={styles.pastSummariesButton} onClick={toggleHistory}>
         {showHistory ? "Hide History" : "Past Summaries"}
       </button>
       {isLoggedIn && (
-        <button
-          className={styles.logoutButton}
-          onClick={handleLogout}
-        >
+        <button className={styles.logoutButton} onClick={handleLogout}>
           Logout
         </button>
       )}
-      <div className={styles.card}>
+      <div className={styles.summarizerCard}>
         <div className={styles.leftSection}>
           <textarea
             className={styles.textarea}
@@ -243,10 +235,7 @@ function Auth({ onLogin }) {
     <div className={styles.container}>
       <div className={styles.card}>
         <h1 className={styles.title}>User Authentication</h1>
-        <button
-          className={styles.toggleButton}
-          onClick={() => setShowLogin(!showLogin)}
-        >
+        <button className={styles.toggleButton} onClick={() => setShowLogin(!showLogin)}>
           Switch to {showLogin ? "Register" : "Login"}
         </button>
         {showLogin ? (
@@ -271,10 +260,7 @@ function Auth({ onLogin }) {
                 className={styles.prettyInput}
               />
             </div>
-            <ReCAPTCHA
-              sitekey={recaptchaSiteKey}
-              onChange={handleCaptchaChange}
-            />
+            <ReCAPTCHA sitekey={recaptchaSiteKey} onChange={handleCaptchaChange} />
             <button onClick={handleLogin} className={styles.button}>
               Login
             </button>
@@ -311,10 +297,7 @@ function Auth({ onLogin }) {
                 className={styles.prettyInput}
               />
             </div>
-            <ReCAPTCHA
-              sitekey={recaptchaSiteKey}
-              onChange={handleCaptchaChange}
-            />
+            <ReCAPTCHA sitekey={recaptchaSiteKey} onChange={handleCaptchaChange} />
             <button onClick={handleRegister} className={styles.button}>
               Register
             </button>
@@ -388,7 +371,11 @@ function App() {
                   onClick={() => setShowSummarizer(!showSummarizer)}
                   disabled={isLoggedIn}
                 >
-                  {isLoggedIn ? "You are logged in" : (showSummarizer ? "Switch to Auth" : "Switch to Summarizer")}
+                  {isLoggedIn
+                    ? "You are logged in"
+                    : showSummarizer
+                    ? "Switch to Auth"
+                    : "Switch to Summarizer"}
                 </button>
                 {showSummarizer ? <Summarizer onLogout={handleLogout} /> : <Auth onLogin={handleLogin} />}
               </>
