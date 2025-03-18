@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Added useEffect for Verify
+import React, { useState, useEffect } from "react";
 import { HfInference } from "@huggingface/inference";
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -21,13 +21,13 @@ const isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
-function Summarizer() {
+function Summarizer({ onLogout }) { // Added onLogout prop
   const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [savedSummaries, setSavedSummaries] = useState([]);
-  const [showHistory, setShowHistory] = useState(false); // Toggle history box
-  const [pastSummaries, setPastSummaries] = useState([]); // Store fetched summaries
+  const [showHistory, setShowHistory] = useState(false);
+  const [pastSummaries, setPastSummaries] = useState([]);
 
   const handleSummarize = async () => {
     if (!text) return alert("Please enter some text!");
@@ -75,7 +75,15 @@ function Summarizer() {
         return;
       }
     }
-    setShowHistory(!showHistory); // Toggle visibility
+    setShowHistory(!showHistory);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Clear token
+    setSavedSummaries([]); // Optional: Clear session summaries
+    setPastSummaries([]); // Optional: Clear past summaries
+    setShowHistory(false); // Hide history box
+    onLogout(); // Update App state
   };
 
   return (
@@ -86,6 +94,12 @@ function Summarizer() {
         onClick={toggleHistory}
       >
         {showHistory ? "Hide History" : "Past Summaries"}
+      </button>
+      <button
+        className={styles.logoutButton}
+        onClick={handleLogout}
+      >
+        Logout
       </button>
       <div className={styles.card}>
         <div className={styles.leftSection}>
@@ -115,7 +129,6 @@ function Summarizer() {
             </ul>
           )}
         </div>
-        {/* History Box */}
         <div className={`${styles.historyBox} ${showHistory ? "" : styles.hidden}`}>
           <h2 className={styles.subtitle}>Past Summaries</h2>
           {pastSummaries.length === 0 ? (
@@ -341,6 +354,11 @@ function App() {
     setShowSummarizer(true);
   };
 
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setShowSummarizer(true); // Stay on Summarizer, but logged out
+  };
+
   return (
     <Router>
       <div>
@@ -356,7 +374,7 @@ function App() {
                 >
                   {isLoggedIn ? "You are logged in" : (showSummarizer ? "Switch to Auth" : "Switch to Summarizer")}
                 </button>
-                {showSummarizer ? <Summarizer /> : <Auth onLogin={handleLogin} />}
+                {showSummarizer ? <Summarizer onLogout={handleLogout} /> : <Auth onLogin={handleLogin} />}
               </>
             }
           />
