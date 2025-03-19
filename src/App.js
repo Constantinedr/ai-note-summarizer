@@ -19,7 +19,7 @@ const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
-<dsdfds></dsdfds>
+
 function Summarizer({ onLogout }) {
   const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
