@@ -261,98 +261,7 @@ body {
   font-size: 1.1rem;
   height: 400px; /* Increased height */
 }
-/* Existing styles assumed to be present; add these new ones */
-.darkMode {
-  background-color: #1a1a1a;
-  color: #ffffff;
-}
 
-.darkMode .textarea,
-.darkMode .searchBar,
-.darkMode .prettyInput {
-  background-color: #333;
-  color: #fff;
-  border: 1px solid #555;
-}
-
-.darkMode .button,
-.darkMode .pastSummariesButton,
-.darkMode .logoutButton,
-.darkMode .darkModeToggle {
-  background-color: #444;
-  color: #fff;
-  border: 1px solid #666;
-}
-
-.darkMode .button:hover,
-.darkMode .pastSummariesButton:hover,
-.darkMode .logoutButton:hover,
-.darkMode .darkModeToggle:hover {
-  background-color: #555;
-}
-
-.darkMode .summarizerCard,
-.darkMode .card {
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-}
-
-.darkMode .noSummaries,
-.darkMode .subtitle,
-.darkMode .summaryItem small {
-  color: #ccc;
-}
-
-.darkModeToggle {
-  padding: 8px 16px;
-  margin: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.loadingWheel {
-  width: 24px;
-  height: 24px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 10px auto;
-}
-
-.darkMode .loadingWheel {
-  border: 4px solid #555;
-  border-top: 4px solid #00aaff;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.progressBar {
-  width: 100%;
-  height: 10px;
-  background-color: #ddd;
-  border-radius: 5px;
-  margin-top: 10px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background-color: #007bff;
-  transition: width 0.3s ease-in-out;
-}
-
-.darkMode .progressBar {
-  background-color: #444;
-}
-
-.darkMode .progressFill {
-  background-color: #00aaff;
-}
 .textarea:focus {
   outline: 2px solid #4299e1;
 }
@@ -408,4 +317,118 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
+}
+/* Existing styles assumed to be present; update with these */
+.darkMode {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.darkMode .textarea,
+.darkMode .searchBar,
+.darkMode .prettyInput {
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #555;
+}
+
+.darkMode .button,
+.darkMode .pastSummariesButton,
+.darkMode .logoutButton,
+.darkMode .darkModeToggle,
+.darkMode .switchButton, /* Added switchButton */
+.darkMode .toggleButton {
+  background-color: #444;
+  color: #fff;
+  border: 1px solid #666;
+}
+
+.darkMode .button:hover,
+.darkMode .pastSummariesButton:hover,
+.darkMode .logoutButton:hover,
+.darkMode .darkModeToggle:hover,
+.darkMode .switchButton:hover, /* Added switchButton */
+.darkMode .toggleButton:hover {
+  background-color: #555;
+}
+
+.darkMode .summarizerCard,
+.darkMode .card {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+}
+
+.darkMode .noSummaries,
+.darkMode .subtitle,
+.darkMode .summaryItem small {
+  color: #ccc;
+}
+
+.darkModeToggle {
+  padding: 8px 16px;
+  margin: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.progressBar {
+  width: 100%;
+  height: 10px;
+  background-color: #ddd;
+  border-radius: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #007bff;
+  transition: width 0.3s ease-in-out;
+}
+
+.darkMode .progressBar {
+  background-color: #444;
+}
+
+.darkMode .progressFill {
+  background-color: #00aaff;
+}
+
+.loadingWheel {
+  width: 24px;
+  height: 24px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 10px auto;
+}
+
+.darkMode .loadingWheel {
+  border: 4px solid #555;
+  border-top: 4px solid #00aaff;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Ensure switchButton has a default style if not already defined */
+.switchButton {
+  padding: 8px 16px;
+  margin: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.switchButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }

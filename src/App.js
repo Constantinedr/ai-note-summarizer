@@ -20,7 +20,7 @@ const isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
-function Summarizer({ onLogout }) {
+function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
   const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,6 @@ function Summarizer({ onLogout }) {
   const [showHistory, setShowHistory] = useState(false);
   const [pastSummaries, setPastSummaries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [darkMode, setDarkMode] = useState(false);
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
@@ -45,10 +44,6 @@ function Summarizer({ onLogout }) {
     }
     return () => clearInterval(interval);
   }, [loading]);
-
-  useEffect(() => {
-    document.body.classList.toggle("dark-mode", darkMode);
-  }, [darkMode]);
 
   const handleSummarize = async () => {
     if (!text) return alert("Please enter some text!");
@@ -113,7 +108,7 @@ function Summarizer({ onLogout }) {
 
   return (
     <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
-      <h1 className={styles.title}>Sum/mary</h1>
+      <h1 className={styles.title}>AI Note Summarizer</h1>
       <button className={styles.pastSummariesButton} onClick={toggleHistory}>
         {showHistory ? "Hide History" : "Past Summaries"}
       </button>
@@ -122,10 +117,7 @@ function Summarizer({ onLogout }) {
           Logout
         </button>
       )}
-      <button
-        className={styles.darkModeToggle}
-        onClick={() => setDarkMode(!darkMode)}
-      >
+      <button className={styles.darkModeToggle} onClick={toggleDarkMode}>
         {darkMode ? "Light Mode" : "Dark Mode"}
       </button>
       <div className={styles.summarizerCard}>
@@ -192,7 +184,7 @@ function Summarizer({ onLogout }) {
   );
 }
 
-function Auth({ onLogin }) {
+function Auth({ onLogin, darkMode, toggleDarkMode }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -201,7 +193,7 @@ function Auth({ onLogin }) {
   const [message, setMessage] = useState("");
   const [showLogin, setShowLogin] = useState(true);
   const [captchaToken, setCaptchaToken] = useState("");
-  const [loading, setLoading] = useState(false); // New state for loading
+  const [loading, setLoading] = useState(false);
 
   const recaptchaSiteKey = "6LcoWPgqAAAAAALZ1qlOO-uc34kWOU6uAEuk8vvI";
 
@@ -220,7 +212,7 @@ function Auth({ onLogin }) {
       return setMessage("Password must be at least 8 characters long and include letters and numbers.");
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/register", {
         username,
@@ -238,7 +230,7 @@ function Auth({ onLogin }) {
       setMessage(errorMsg);
       console.error("Registration failed:", error);
     }
-    setLoading(false); // Stop loading
+    setLoading(false);
   };
 
   const handleLogin = async () => {
@@ -249,7 +241,7 @@ function Auth({ onLogin }) {
       return setMessage("Please enter a valid email address.");
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/login", {
         email: loginEmail,
@@ -267,15 +259,18 @@ function Auth({ onLogin }) {
       setMessage(errorMsg);
       console.error("Login failed:", error);
     }
-    setLoading(false); // Stop loading
+    setLoading(false);
   };
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
       <div className={styles.card}>
         <h1 className={styles.title}>User Authentication</h1>
         <button className={styles.toggleButton} onClick={() => setShowLogin(!showLogin)}>
           Switch to {showLogin ? "Register" : "Login"}
+        </button>
+        <button className={styles.darkModeToggle} onClick={toggleDarkMode}>
+          {darkMode ? "Light Mode" : "Dark Mode"}
         </button>
         {showLogin ? (
           <div className={styles.section}>
@@ -393,6 +388,20 @@ function Verify() {
 function App() {
   const [showSummarizer, setShowSummarizer] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [darkMode, setDarkMode] = useState(() => {
+    // Load dark mode preference from localStorage on initial render
+    return localStorage.getItem("darkMode") === "true";
+  });
+
+  // Persist dark mode to localStorage and apply to body
+  useEffect(() => {
+    localStorage.setItem("darkMode", darkMode);
+    document.body.classList.toggle("dark-mode", darkMode);
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+  };
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -423,7 +432,11 @@ function App() {
                     ? "Switch to Auth"
                     : "Switch to Summarizer"}
                 </button>
-                {showSummarizer ? <Summarizer onLogout={handleLogout} /> : <Auth onLogin={handleLogin} />}
+                {showSummarizer ? (
+                  <Summarizer onLogout={handleLogout} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                ) : (
+                  <Auth onLogin={handleLogin} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                )}
               </>
             }
           />
