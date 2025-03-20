@@ -24,15 +24,14 @@ function Summarizer({ onLogout }) {
   const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0); // New state for progress
+  const [progress, setProgress] = useState(0);
   const [savedSummaries, setSavedSummaries] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [pastSummaries, setPastSummaries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [darkMode, setDarkMode] = useState(false); // New state for dark mode
+  const [darkMode, setDarkMode] = useState(false);
   const isLoggedIn = !!localStorage.getItem("token");
 
-  // Simulate progress for demonstration (replace with real API progress if available)
   useEffect(() => {
     let interval;
     if (loading) {
@@ -47,7 +46,6 @@ function Summarizer({ onLogout }) {
     return () => clearInterval(interval);
   }, [loading]);
 
-  // Toggle dark mode and apply class to body
   useEffect(() => {
     document.body.classList.toggle("dark-mode", darkMode);
   }, [darkMode]);
@@ -115,7 +113,7 @@ function Summarizer({ onLogout }) {
 
   return (
     <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
-      <h1 className={styles.title}>AI Note Summarizer</h1>
+      <h1 className={styles.title}>Sum/mary</h1>
       <button className={styles.pastSummariesButton} onClick={toggleHistory}>
         {showHistory ? "Hide History" : "Past Summaries"}
       </button>
@@ -194,7 +192,6 @@ function Summarizer({ onLogout }) {
   );
 }
 
-// Auth and Verify components remain unchanged
 function Auth({ onLogin }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -204,6 +201,7 @@ function Auth({ onLogin }) {
   const [message, setMessage] = useState("");
   const [showLogin, setShowLogin] = useState(true);
   const [captchaToken, setCaptchaToken] = useState("");
+  const [loading, setLoading] = useState(false); // New state for loading
 
   const recaptchaSiteKey = "6LcoWPgqAAAAAALZ1qlOO-uc34kWOU6uAEuk8vvI";
 
@@ -222,6 +220,7 @@ function Auth({ onLogin }) {
       return setMessage("Password must be at least 8 characters long and include letters and numbers.");
     }
 
+    setLoading(true); // Start loading
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/register", {
         username,
@@ -239,6 +238,7 @@ function Auth({ onLogin }) {
       setMessage(errorMsg);
       console.error("Registration failed:", error);
     }
+    setLoading(false); // Stop loading
   };
 
   const handleLogin = async () => {
@@ -249,6 +249,7 @@ function Auth({ onLogin }) {
       return setMessage("Please enter a valid email address.");
     }
 
+    setLoading(true); // Start loading
     try {
       const response = await axios.post("https://ai-note-summarizer.onrender.com/login", {
         email: loginEmail,
@@ -266,6 +267,7 @@ function Auth({ onLogin }) {
       setMessage(errorMsg);
       console.error("Login failed:", error);
     }
+    setLoading(false); // Stop loading
   };
 
   return (
@@ -285,6 +287,7 @@ function Auth({ onLogin }) {
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 className={styles.prettyInput}
+                disabled={loading}
               />
             </div>
             <br />
@@ -295,12 +298,14 @@ function Auth({ onLogin }) {
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
                 className={styles.prettyInput}
+                disabled={loading}
               />
             </div>
             <ReCAPTCHA sitekey={recaptchaSiteKey} onChange={handleCaptchaChange} />
-            <button onClick={handleLogin} className={styles.button}>
-              Login
+            <button onClick={handleLogin} className={styles.button} disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
             </button>
+            {loading && <div className={styles.loadingWheel}></div>}
           </div>
         ) : (
           <div className={styles.section}>
@@ -312,6 +317,7 @@ function Auth({ onLogin }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className={styles.prettyInput}
+                disabled={loading}
               />
             </div>
             <br />
@@ -322,6 +328,7 @@ function Auth({ onLogin }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={styles.prettyInput}
+                disabled={loading}
               />
             </div>
             <br />
@@ -332,12 +339,14 @@ function Auth({ onLogin }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={styles.prettyInput}
+                disabled={loading}
               />
             </div>
             <ReCAPTCHA sitekey={recaptchaSiteKey} onChange={handleCaptchaChange} />
-            <button onClick={handleRegister} className={styles.button}>
-              Register
+            <button onClick={handleRegister} className={styles.button} disabled={loading}>
+              {loading ? "Registering..." : "Register"}
             </button>
+            {loading && <div className={styles.loadingWheel}></div>}
           </div>
         )}
         {message && <p className={styles.message}>{message}</p>}
