@@ -52,7 +52,7 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
 
     try {
       const result = await hf.summarization({
-        model: "facebook/bart-large-cnn", // Replace with DeepSeek if available
+        model: "facebook/bart-large-cnn",
         inputs: text,
       });
       const summaryText = result.summary_text;
@@ -389,14 +389,12 @@ function App() {
   const [showSummarizer, setShowSummarizer] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [darkMode, setDarkMode] = useState(() => {
-    // Load dark mode preference from localStorage on initial render
     return localStorage.getItem("darkMode") === "true";
   });
 
-  // Persist dark mode to localStorage and apply to body
   useEffect(() => {
     localStorage.setItem("darkMode", darkMode);
-    document.body.classList.toggle("dark-mode", darkMode);
+    document.body.classList.toggle("darkMode", darkMode); // Changed to "darkMode" to match CSS
   }, [darkMode]);
 
   const toggleDarkMode = () => {
@@ -415,7 +413,7 @@ function App() {
 
   return (
     <Router>
-      <div>
+      <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
         <Routes>
           <Route
             path="/"
