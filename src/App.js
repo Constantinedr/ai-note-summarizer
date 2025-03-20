@@ -108,7 +108,7 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
 
   return (
     <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
-      <h1 className={styles.title}>AI Note Summarizer</h1>
+      <h1 className={styles.title}> Mary AI </h1>
       <button className={styles.pastSummariesButton} onClick={toggleHistory}>
         {showHistory ? "Hide History" : "Past Summaries"}
       </button>
@@ -429,8 +429,8 @@ function App() {
                   {isLoggedIn
                     ? "You are logged in"
                     : showSummarizer
-                    ? "Switch to Auth"
-                    : "Switch to Summarizer"}
+                    ? "Log in"
+                    : "Back to home"}
                 </button>
                 {showSummarizer ? (
                   <Summarizer onLogout={handleLogout} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />

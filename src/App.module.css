@@ -118,7 +118,14 @@ body {
   margin-top: 15px;
   transition: background 0.3s;
 }
-
+body.dark-mode {
+  background-color: #121212;
+  color: white;
+}
+.darkMode .switchButton {
+  background-color: #333;
+  color: white;
+}
 .button:hover {
   background-color: #0056b3;
 }
@@ -169,8 +176,8 @@ body {
 /* Logout Button */
 .logoutButton {
   position: absolute;
-  top: 60px;
-  left: 20px;
+  top: 70px;
+  left: 30px;
   padding: 10px 20px;
   background-color: #e53e3e;
   color: white;
@@ -418,17 +425,4 @@ body {
 }
 
 /* Ensure switchButton has a default style if not already defined */
-.switchButton {
-  padding: 8px 16px;
-  margin: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
 
-.switchButton:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
