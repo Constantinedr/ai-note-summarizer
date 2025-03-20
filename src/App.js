@@ -24,11 +24,33 @@ function Summarizer({ onLogout }) {
   const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0); // New state for progress
   const [savedSummaries, setSavedSummaries] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [pastSummaries, setPastSummaries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [darkMode, setDarkMode] = useState(false); // New state for dark mode
   const isLoggedIn = !!localStorage.getItem("token");
+
+  // Simulate progress for demonstration (replace with real API progress if available)
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      setProgress(0);
+      interval = setInterval(() => {
+        setProgress((prev) => (prev < 90 ? prev + 10 : prev));
+      }, 500);
+    } else {
+      setProgress(100);
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  // Toggle dark mode and apply class to body
+  useEffect(() => {
+    document.body.classList.toggle("dark-mode", darkMode);
+  }, [darkMode]);
 
   const handleSummarize = async () => {
     if (!text) return alert("Please enter some text!");
@@ -37,7 +59,7 @@ function Summarizer({ onLogout }) {
 
     try {
       const result = await hf.summarization({
-        model: "facebook/bart-large-cnn",
+        model: "facebook/bart-large-cnn", // Replace with DeepSeek if available
         inputs: text,
       });
       const summaryText = result.summary_text;
@@ -92,7 +114,7 @@ function Summarizer({ onLogout }) {
   );
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
       <h1 className={styles.title}>AI Note Summarizer</h1>
       <button className={styles.pastSummariesButton} onClick={toggleHistory}>
         {showHistory ? "Hide History" : "Past Summaries"}
@@ -102,6 +124,12 @@ function Summarizer({ onLogout }) {
           Logout
         </button>
       )}
+      <button
+        className={styles.darkModeToggle}
+        onClick={() => setDarkMode(!darkMode)}
+      >
+        {darkMode ? "Light Mode" : "Dark Mode"}
+      </button>
       <div className={styles.summarizerCard}>
         <div className={styles.leftSection}>
           <textarea
@@ -114,6 +142,14 @@ function Summarizer({ onLogout }) {
           <button className={styles.button} onClick={handleSummarize} disabled={loading}>
             {loading ? "Summarizing..." : "Summarize"}
           </button>
+          {loading && (
+            <div className={styles.progressBar}>
+              <div
+                className={styles.progressFill}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          )}
         </div>
         <div className={styles.rightSection}>
           <h2 className={styles.subtitle}>Saved Summaries</h2>
@@ -158,6 +194,7 @@ function Summarizer({ onLogout }) {
   );
 }
 
+// Auth and Verify components remain unchanged
 function Auth({ onLogin }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
