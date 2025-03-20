@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { HfInference } from "@huggingface/inference";
+import OpenAI from "openai"; 
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
 import { BrowserRouter as Router, Route, Routes, useSearchParams } from "react-router-dom";
 import styles from "./App.module.css";
 
-const hf = new HfInference("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");
+const openai = new OpenAI({
+  baseURL: "https://api.naga.ac/v1",
+  apiKey: "_iV4f1Wrr0PHMOWnsVHUMr5N_urpceCLGSD4te82jvY", 
+  dangerouslyAllowBrowser: true, 
+});
 
 // Password and email validation functions
 const isValidPassword = (password) => {
@@ -51,11 +55,18 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
     const token = localStorage.getItem("token");
 
     try {
-      const result = await hf.summarization({
-        model: "facebook/bart-large-cnn",
-        inputs: text,
+      
+      const response = await openai.chat.completions.create({
+        model: "deepseek-reasoner", 
+        messages: [
+          { role: "system", content: "You are a helpful assistant that summarizes text concisely." },
+          { role: "user", content: `Summarize this text: ${text}` },
+        ],
+        max_tokens: 1,
+        temperature: 0.7, 
       });
-      const summaryText = result.summary_text;
+
+      const summaryText = response.choices[0].message.content;
       setSummary(summaryText);
       setSavedSummaries([...savedSummaries, summaryText]);
 
@@ -67,7 +78,7 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Something went wrong! Check your API key or login status.");
+      alert("Something went wrong! Check your API key or network status.");
     }
     setLoading(false);
   };
@@ -394,7 +405,7 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem("darkMode", darkMode);
-    document.body.classList.toggle("darkMode", darkMode); // Changed to "darkMode" to match CSS
+    document.body.classList.toggle("darkMode", darkMode);
   }, [darkMode]);
 
   const toggleDarkMode = () => {
