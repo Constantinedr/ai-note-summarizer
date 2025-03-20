@@ -57,12 +57,12 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
     try {
       
       const response = await openai.chat.completions.create({
-        model: "deepseek-reasoner", 
+        model: "deepseek-chat", 
         messages: [
           { role: "system", content: "You are a helpful assistant that summarizes text concisely." },
           { role: "user", content: `Summarize this text: ${text}` },
         ],
-        max_tokens: 1,
+        max_tokens: 10,
         temperature: 0.7, 
       });
 
