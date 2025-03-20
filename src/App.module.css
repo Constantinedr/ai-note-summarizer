@@ -118,14 +118,7 @@ body {
   margin-top: 15px;
   transition: background 0.3s;
 }
-body.dark-mode {
-  background-color: #121212;
-  color: white;
-}
-.darkMode .switchButton {
-  background-color: #333;
-  color: white;
-}
+
 .button:hover {
   background-color: #0056b3;
 }
