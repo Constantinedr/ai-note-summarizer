@@ -419,16 +419,3 @@ body {
 
 /* Ensure switchButton has a default style if not already defined */
 
-.switchButton:hover {
-  background-color: #2b6cb0;
-}
-
-.darkMode .switchButton {
-  background-color: #333;
-  color: white;
-  border: 1px solid #666;
-}
-
-.darkMode .switchButton:hover {
-  background-color: #555;
-}
