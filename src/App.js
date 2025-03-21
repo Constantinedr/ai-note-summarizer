@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from "react";
-import OpenAI from "openai"; 
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
 import { BrowserRouter as Router, Route, Routes, useSearchParams } from "react-router-dom";
 import styles from "./App.module.css";
 
-const openai = new OpenAI({
-  baseURL: "https://api.naga.ac/v1",
-  apiKey: "_iV4f1Wrr0PHMOWnsVHUMr5N_urpceCLGSD4te82jvY", 
-  dangerouslyAllowBrowser: true, 
-});
+// Hugging Face API configuration
+const HF_API_TOKEN = "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"; // Replace with your HF API token
+const HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
 
-// Password and email validation functions
+// Password and email validation functions remain unchanged
 const isValidPassword = (password) => {
   const minLength = 8;
   const hasLetter = /[a-zA-Z]/.test(password);
@@ -34,6 +31,10 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
   const [pastSummaries, setPastSummaries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const isLoggedIn = !!localStorage.getItem("token");
+  const MAX_WORDS = 400; // Set word limit based on findings
+
+  // Calculate word count
+  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
 
   useEffect(() => {
     let interval;
@@ -51,22 +52,31 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
 
   const handleSummarize = async () => {
     if (!text) return alert("Please enter some text!");
+    if (wordCount > MAX_WORDS) {
+      return alert(`Text exceeds maximum word limit of ${MAX_WORDS} words. Current count: ${wordCount}.`);
+    }
     setLoading(true);
     const token = localStorage.getItem("token");
 
     try {
-      
-      const response = await openai.chat.completions.create({
-        model: "deepseek-chat", 
-        messages: [
-          { role: "system", content: "You are a helpful assistant that summarizes text concisely." },
-          { role: "user", content: `Summarize this text: ${text}` },
-        ],
-        max_tokens: 10,
-        temperature: 0.7, 
-      });
+      const response = await axios.post(
+        HF_API_URL,
+        {
+          inputs: text,
+          parameters: {
+            max_length: 100,
+            min_length: 30,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${HF_API_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const summaryText = response.choices[0].message.content;
+      const summaryText = response.data[0].summary_text;
       setSummary(summaryText);
       setSavedSummaries([...savedSummaries, summaryText]);
 
@@ -140,6 +150,12 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
+          <div className={styles.wordCount}>
+            Word count: {wordCount}/{MAX_WORDS}
+            {wordCount > MAX_WORDS && (
+              <span className={styles.wordCountError}> (Exceeds limit!)</span>
+            )}
+          </div>
           <button className={styles.button} onClick={handleSummarize} disabled={loading}>
             {loading ? "Summarizing..." : "Summarize"}
           </button>
@@ -195,6 +211,7 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
   );
 }
 
+// Auth and Verify components remain unchanged (omitted for brevity)
 function Auth({ onLogin, darkMode, toggleDarkMode }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");

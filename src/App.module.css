@@ -331,7 +331,16 @@ body {
   color: #fff;
   border: 1px solid #555;
 }
+.wordCount {
+  font-size: 0.9em;
+  margin-top: 5px;
+  color: #666;
+}
 
+.wordCountError {
+  color: #ff4444;
+  font-weight: bold;
+}
 .darkMode .button,
 .darkMode .pastSummariesButton,
 .darkMode .logoutButton,
