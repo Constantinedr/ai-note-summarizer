@@ -87,7 +87,7 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
 
   return (
     <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
-      <Link to="/home">
+      <Link to="/App">
         <button className={styles.topNavButton}>Home</button>
       </Link>
       <h1 className={styles.title}>Mary AI</h1>
