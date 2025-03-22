@@ -7,8 +7,7 @@ import styles from "./App.module.css";
 // Hugging Face API configuration
 const HF_API_TOKEN = "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"; // Replace with your HF API token
 const HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
-fsddfdf
-// Password and email validation functions remain unchanged
+
 const isValidPassword = (password) => {
   const minLength = 8;
   const hasLetter = /[a-zA-Z]/.test(password);
