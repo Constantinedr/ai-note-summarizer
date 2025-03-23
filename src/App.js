@@ -3,7 +3,7 @@ import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
 import { BrowserRouter as Router, Route, Routes, useSearchParams } from "react-router-dom";
 import styles from "./App.module.css";
-
+//dfsdfds
 // Hugging Face API configuration
 const HF_API_TOKEN = "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"; // Replace with your HF API token
 const HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
