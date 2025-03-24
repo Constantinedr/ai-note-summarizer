@@ -4,6 +4,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { BrowserRouter as Router, Route, Routes, useSearchParams, Link } from "react-router-dom";
 import styles from "./App.module.css";
 import RGBComponent from "./RGBComponent.js";
+import PersonalityTrait from "./Personality-trait.js";
 
 // Hugging Face API configuration
 const HF_API_TOKEN = "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"; // Replace with your HF API token
@@ -206,11 +207,16 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
           )}
         </div>
       </div>
-      <div className={styles.rightSection}>
-        <h2 className={styles.subtitle}>More Options</h2>
+      <h2 className={styles.subtitle}>More Options</h2>
+      <div className={styles.rightSection2}>
+        
         <Link to="/rgb-component">
           <button className={styles.button}>Go to RGB Component</button>
         </Link>
+        <Link to="/personality-trait">
+          <button className={styles.button}>Go to personality Component</button>
+        </Link>
+        
       </div>
     </div>
   );
@@ -472,6 +478,7 @@ function App() {
           />
           <Route path="/verify" element={<Verify />} />
           <Route path="/rgb-component" element={<RGBComponent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+          <Route path="/personality-trait" element={<PersonalityTrait darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
         </Routes>
       </div>
     </Router>

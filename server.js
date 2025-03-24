@@ -9,16 +9,27 @@ const nodemailer = require('nodemailer');
 const app = express();
 const PORT = 5000;
 
-app.use(cors()); // Allow frontend origin
+app.use(cors());
 app.use(bodyParser.json());
 
-// MongoDB connection
+// MongoDB Atlas connection with improved error handling
 const atlasURI = 'mongodb+srv://kostalampadaris:7H6u5KGL7e62KVt@cluster0.uic4a.mongodb.net/ai?retryWrites=true&w=majority&appName=Cluster0';
-mongoose.connect(atlasURI)
+mongoose.connect(atlasURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
   .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => console.error('Failed to connect to MongoDB Atlas:', err));
+  .catch(err => console.error('MongoDB connection error:', err.message));
 
-// User schema with summaries field
+// Log connection status
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+mongoose.connection.on('disconnected', () => {
+  console.warn('MongoDB disconnected');
+});
+
+// User Schema
 const userSchema = new mongoose.Schema({
   username: String,
   email: { type: String, unique: true },
@@ -26,12 +37,27 @@ const userSchema = new mongoose.Schema({
   additionalInfo: String,
   verified: { type: Boolean, default: false },
   verificationToken: String,
-  summaries: [{ text: String, createdAt: { type: Date, default: Date.now } }], // Added for summaries
+  summaries: [{ text: String, createdAt: { type: Date, default: Date.now } }],
 });
 
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
 const User = mongoose.model('User', userSchema);
+
+// Result Schema
+const resultSchema = new mongoose.Schema({
+  userId: String,
+  scores: {
+    mind: { type: Number, default: 0 },
+    energy: { type: Number, default: 0 },
+    nature: { type: Number, default: 0 },
+    tactics: { type: Number, default: 0 },
+    identity: { type: Number, default: 0 },
+  },
+  timestamp: { type: Date, default: Date.now },
+});
+
+const Result = mongoose.model('Result', resultSchema);
 
 // CAPTCHA bypass secret
 const CAPTCHA_BYPASS_SECRET = 'my-secret-bypass-token';
@@ -41,7 +67,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'lampadarisconstantine@gmail.com',
-    pass: 'smtr gceq ugov eehi', // Your App Password
+    pass: 'smtr gceq ugov eehi',
   },
 });
 
@@ -50,7 +76,7 @@ transporter.verify((error, success) => {
   else console.log('Email transporter is ready');
 });
 
-// Password validation function
+// Validation functions
 const isValidPassword = (password) => {
   const minLength = 8;
   const hasLetter = /[a-zA-Z]/.test(password);
@@ -58,7 +84,6 @@ const isValidPassword = (password) => {
   return password.length >= minLength && hasLetter && hasNumber;
 };
 
-// Email validation function (basic regex)
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -99,14 +124,10 @@ app.post('/register', async (req, res) => {
     }
 
     const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
-      return res.status(400).send('Email already registered');
-    }
+    if (existingEmail) return res.status(400).send('Email already registered');
 
     const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).send('Username already taken');
-    }
+    if (existingUser) return res.status(400).send('Username already taken');
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = jwt.sign({ email }, 'verificationSecret', { expiresIn: '1h' });
@@ -136,9 +157,7 @@ app.get('/verify', async (req, res) => {
     const decoded = jwt.verify(token, 'verificationSecret');
     const user = await User.findOne({ email: decoded.email });
 
-    if (!user) {
-      return res.status(400).send('Invalid token');
-    }
+    if (!user) return res.status(400).send('Invalid token');
 
     user.verified = true;
     user.verificationToken = undefined;
@@ -161,10 +180,7 @@ app.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).send('User not found');
-
-    if (!user.verified) {
-      return res.status(400).send('Please verify your email first');
-    }
+    if (!user.verified) return res.status(400).send('Please verify your email first');
 
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).send('Invalid password');
@@ -206,6 +222,54 @@ app.get('/summaries', async (req, res) => {
   } catch (error) {
     console.error('Error fetching summaries:', error);
     res.status(500).send('Failed to fetch summaries');
+  }
+});
+
+// Save Results Endpoint
+app.post('/api/results', async (req, res) => {
+  console.time('POST /api/results');
+  const { userId, scores } = req.body;
+  console.log('Received data:', { userId, scores });
+
+  if (!userId || !scores) {
+    console.error('Invalid request data:', req.body);
+    return res.status(400).json({ error: 'Missing userId or scores' });
+  }
+
+  try {
+    const result = new Result({ 
+      userId, 
+      scores: {
+        mind: scores.mind || scores.Mind || 0,
+        energy: scores.energy || scores.Energy || 0,
+        nature: scores.nature || scores.Nature || 0,
+        tactics: scores.tactics || scores.Tactics || 0,
+        identity: scores.identity || scores.Identity || 0,
+      }
+    });
+    const savedResult = await result.save();
+    console.log('Saved to MongoDB:', savedResult);
+    res.json({ message: 'Results saved successfully', id: savedResult._id });
+  } catch (error) {
+    console.error('Error saving result:', error.message);
+    res.status(500).json({ error: 'Failed to save results' });
+  } finally {
+    console.timeEnd('POST /api/results');
+  }
+});
+
+// Get Results Endpoint
+app.get('/api/results', async (req, res) => {
+  console.time('GET /api/results');
+  try {
+    const results = await Result.find().sort({ timestamp: -1 }).limit(50);
+    console.log('Fetched results:', results.length);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching results:', error.message);
+    res.status(500).json({ error: 'Failed to fetch results' });
+  } finally {
+    console.timeEnd('GET /api/results');
   }
 });
 
