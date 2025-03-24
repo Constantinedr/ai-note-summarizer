@@ -1,4 +1,9 @@
-
+.rgbbox {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
   
   .summarizerCard {
     display: flex;
@@ -209,4 +214,38 @@
   
   .mode-toggle:hover {
     background: linear-gradient(to right, #2b6cb0, #0056b3);
+  }
+  .login-status {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  
+  .status-logged-in {
+    color: #4CAF50; /* Green for logged in */
+  }
+  
+  .status-logged-out {
+    color: #e53e3e; /* Red for not logged in */
+  }
+  
+  .back-button-container {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .back-button {
+    width: auto;
+    padding: 10px 20px;
+    background-color: #4299e1;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
   }

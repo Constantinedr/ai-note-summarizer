@@ -1,13 +1,17 @@
 // src/RGBController.js
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom'; // Import Link for navigation
 import './123.css';
 
-const RGBController = () => {
+const RGBController = ({ darkMode, toggleDarkMode }) => { // Ensure props are received from App.js
   const [isGameMode, setIsGameMode] = useState(false);
   const [color, setColor] = useState({ red: 128, green: 128, blue: 128 });
   const [gameColor, setGameColor] = useState(generateRandomColor());
   const [options, setOptions] = useState(generateOptions(gameColor));
   const [message, setMessage] = useState('');
+
+  // Check login status using localStorage
+  const isLoggedIn = !!localStorage.getItem("token");
 
   function generateRandomColor() {
     return {
@@ -59,7 +63,14 @@ const RGBController = () => {
     .slice(1)}`;
 
   return (
-    <div className="rgbbox">
+    <div className={`rgbbox ${darkMode ? 'darkMode' : ''}`}>
+      {/* Top Left: Login Status Indicator */}
+      <div className="login-status">
+        <span className={isLoggedIn ? "status-logged-in" : "status-logged-out"}>
+          {isLoggedIn ? "Logged In" : "Not Logged In"}
+        </span>
+      </div>
+
       <button 
         className="retake-button mode-toggle"
         onClick={() => setIsGameMode(!isGameMode)}
@@ -67,6 +78,7 @@ const RGBController = () => {
       >
         Switch to {isGameMode ? 'Controller' : 'Game'} Mode
       </button>
+
 
       <div className="summarizerCard">
         {/* Left Section */}
@@ -201,6 +213,15 @@ const RGBController = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Bottom: Button to Navigate Back to App.js (Root Route) */}
+      <div className="back-button-container">
+        <Link to="/">
+          <button className="button back-button">
+            Back to Summarizer
+          </button>
+        </Link>
       </div>
     </div>
   );
