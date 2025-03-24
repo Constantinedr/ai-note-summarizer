@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
-import { BrowserRouter as Router, Route, Routes, useSearchParams } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useSearchParams, Link } from "react-router-dom";
 import styles from "./App.module.css";
 //dfsdfds
 // Hugging Face API configuration
@@ -128,6 +128,7 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
 
   return (
     <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
+
       <h1 className={styles.title}> Mary AI </h1>
       <button className={styles.pastSummariesButton} onClick={toggleHistory}>
         {showHistory ? "Hide History" : "Past Summaries"}
@@ -205,8 +206,20 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
             </ul>
           )}
         </div>
+        
       </div>
+      <div className={styles.rightSection}> 
+        <h2 className={styles.subtitle}>More Options</h2>
+        <Link to="/RGBcomponent">
+        <button className={styles.button}>Go to RGB Component</button>
+        </Link>
+        
+        
+        </div>
+
+
     </div>
+    
   );
 }
 
