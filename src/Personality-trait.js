@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './App.css';
-//
+
 const PersonalityTrait = ({ darkMode, toggleDarkMode }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -90,7 +90,7 @@ const PersonalityTrait = ({ darkMode, toggleDarkMode }) => {
   const saveResults = async () => {
     const scores = calculateScores();
     const token = localStorage.getItem("token");
-    const effectiveUserId = isLoggedIn && token ? token : userId; // Use token as userId if logged in
+    const effectiveUserId = isLoggedIn && token ? token : userId;
     
     console.log('Sending data to server:', { userId: effectiveUserId, scores });
     try {
@@ -123,7 +123,9 @@ const PersonalityTrait = ({ darkMode, toggleDarkMode }) => {
       });
       const data = await response.json();
       console.log('Fetched past results:', data);
-      setPastResults(Array.isArray(data) ? data : []);
+      // Limit to the 5 most recent results
+      const limitedResults = Array.isArray(data) ? data.slice(0, 5) : [];
+      setPastResults(limitedResults);
     } catch (error) {
       console.error('Error fetching past results:', error.message);
       setPastResults([]);
@@ -217,7 +219,7 @@ const PersonalityTrait = ({ darkMode, toggleDarkMode }) => {
               </li>
             ))}
           </ul>
-          <h2 className="subtitle">Past Results</h2>
+          <h2 className="subtitle">Past Results (Up to 5)</h2>
           <ul className="summaryList">
             {pastResults.length > 0 ? (
               pastResults.map((result) => {
