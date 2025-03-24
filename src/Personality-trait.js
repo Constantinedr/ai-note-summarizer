@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link } from 'react-router-dom';
 import './App.css';
 
-const PersonalityTrait = () => {
+const PersonalityTrait = ({ darkMode, toggleDarkMode }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [pastResults, setPastResults] = useState([]);
   const [userId] = useState(`user_${Math.random().toString(36).substr(2, 9)}`);
+  const isLoggedIn = !!localStorage.getItem("token");
 
   const questions = [
     { text: "You enjoy vibrant social events with lots of people.", category: "Mind", positive: "Extraverted", negative: "Introverted" },
@@ -83,17 +84,23 @@ const PersonalityTrait = () => {
 
   const getPersonalityImage = (results) => {
     const type = Object.values(results).slice(0, 4).join("");
-    return `/images/${type}.png`; // Assumes images are in public/images/
+    return `/images/${type}.png`;
   };
 
   const saveResults = async () => {
     const scores = calculateScores();
-    console.log('Sending data to server:', { userId, scores });
+    const token = localStorage.getItem("token");
+    const effectiveUserId = isLoggedIn && token ? token : userId; // Use token as userId if logged in
+    
+    console.log('Sending data to server:', { userId: effectiveUserId, scores });
     try {
-      const response = await fetch('http://localhost:5000/api/results', {
+      const response = await fetch('https://ai-note-summarizer.onrender.com/api/results', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, scores }),
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(isLoggedIn && { 'Authorization': `Bearer ${token}` })
+        },
+        body: JSON.stringify({ userId: effectiveUserId, scores }),
       });
       const result = await response.json();
       if (response.ok) {
@@ -109,8 +116,11 @@ const PersonalityTrait = () => {
   };
 
   const fetchPastResults = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const response = await fetch('http://localhost:5000/api/results');
+      const response = await fetch('https://ai-note-summarizer.onrender.com/api/results', {
+        headers: isLoggedIn ? { 'Authorization': `Bearer ${token}` } : {}
+      });
       const data = await response.json();
       console.log('Fetched past results:', data);
       setPastResults(Array.isArray(data) ? data : []);
@@ -134,10 +144,13 @@ const PersonalityTrait = () => {
   const results = showResults ? calculateResults(calculateScores()) : null;
 
   return (
-    <div className="container">
+    <div className={`container ${darkMode ? 'darkMode' : ''}`}>
       <div className="summarizerCard">
         <div className="leftSection">
           <h1 className="title">Personality Quest</h1>
+          <button className="darkModeToggle" onClick={toggleDarkMode}>
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </button>
           
           {!showResults ? (
             <div className="section">
@@ -238,13 +251,13 @@ const PersonalityTrait = () => {
           </ul>
         </div>
       </div>
-            <div className="back-button-container">
-              <Link to="/">
-                <button className="button back-button">
-                  Back to Summarizer
-                </button>
-              </Link>
-            </div>
+      <div className="back-button-container">
+        <Link to="/">
+          <button className="button back-button">
+            Back to Summarizer
+          </button>
+        </Link>
+      </div>
     </div>
   );
 };
