@@ -249,3 +249,105 @@
     cursor: pointer;
     transition: background 0.3s;
   }
+
+  .left-section, .right-section {
+    flex: 1;
+  }
+  
+  .title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .text-area {
+    width: 600px;
+    height: 700px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+  }
+  .save-button, .fetch-button, .login-button {
+    padding: 8px 16px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .save-button:hover, .fetch-button:hover, .login-button:hover {
+    background: #218838;
+  }
+  
+  .message {
+    margin-top: 10px;
+    color: #333;
+  }
+  
+  .dark-mode .message {
+    color: #ccc;
+  }
+  .button-group {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .clear-button, .toggle-dark-button, .back-button {
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .clear-button:hover, .toggle-dark-button:hover, .back-button:hover {
+    background: #0056b3;
+  }
+  
+  .subtitle {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .stats-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .stat-item {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .login-status {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .status-logged-in {
+    color: green;
+  }
+  
+  .status-logged-out {
+    color: red;
+  }
+  
+  .dark-mode {
+    background: #333;
+    color: #fff;
+  }
+  
+  .dark-mode .editor-card {
+    background: #444;
+  }
+  
+  .dark-mode .text-area {
+    background: #555;
+    color: #fff;
+    border-color: #666;
+  }

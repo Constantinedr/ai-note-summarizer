@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Route, Routes, useSearchParams, Link } from "r
 import styles from "./App.module.css";
 import RGBComponent from "./RGBComponent.js";
 import PersonalityTrait from "./Personality-trait.js";
-
+import TextViewer from "./Text-viewer.js";
 // Hugging Face API configuration
 const HF_API_TOKEN = "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"; // Replace with your HF API token
 const HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
@@ -216,7 +216,9 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
         <Link to="/personality-trait">
           <button className={styles.button}>Go to personality Component</button>
         </Link>
-        
+        <Link to="/text-viewer">
+          <button className={styles.button}>Go to text viewer</button>
+        </Link>
       </div>
     </div>
   );
@@ -479,6 +481,7 @@ function App() {
           <Route path="/verify" element={<Verify />} />
           <Route path="/rgb-component" element={<RGBComponent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
           <Route path="/personality-trait" element={<PersonalityTrait darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+          <Route path="/text-viewer" element={<TextViewer darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
         </Routes>
       </div>
     </Router>
