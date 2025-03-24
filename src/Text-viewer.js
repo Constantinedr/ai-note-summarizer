@@ -57,14 +57,17 @@ const TextViewer = ({ darkMode, toggleDarkMode }) => {
       const response = await fetch(`http://localhost:5000/text?token=${token}`);
       const data = await response.json();
       if (response.ok) {
-        setSavedText(data);
+        // Ensure savedText is either a valid object with text or null
+        setSavedText(data && data.text ? data : null);
         setMessage('Saved text loaded.');
       } else {
         setMessage(data || 'Failed to fetch saved text.');
+        setSavedText(null);
       }
     } catch (error) {
       console.error('Error fetching text:', error);
       setMessage('Error fetching saved text.');
+      setSavedText(null);
     }
   };
 
@@ -147,7 +150,7 @@ const TextViewer = ({ darkMode, toggleDarkMode }) => {
                 Refresh Saved Text
               </button>
               <ul className="stats-list">
-                {savedText ? (
+                {savedText && savedText.text ? (
                   <li className="stat-item">
                     <span>{savedText.text.substring(0, 20)}...</span>
                     <span>{new Date(savedText.createdAt).toLocaleDateString()}</span>
