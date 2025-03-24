@@ -18,7 +18,36 @@
     margin: 20px auto;
     min-height: 500px;
   }
+  .game-container {
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
   
+  .game-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(45, 55, 72, 0.95);
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(66, 153, 225, 0.2);
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    min-height: 500px;
+  }
+  
+  .unity-game {
+    width: 1150px;
+    max-width: 1600px;
+    height: 700px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(66, 153, 225, 0.2);
+  }
   .leftSection {
     display: flex;
     flex-direction: column;
