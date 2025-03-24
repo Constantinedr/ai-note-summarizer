@@ -12,7 +12,7 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// MongoDB Atlas connection with improved error handling
+// MongoDB Atlas connection
 const atlasURI = 'mongodb+srv://kostalampadaris:7H6u5KGL7e62KVt@cluster0.uic4a.mongodb.net/ai?retryWrites=true&w=majority&appName=Cluster0';
 mongoose.connect(atlasURI, {
   useNewUrlParser: true,
@@ -21,7 +21,6 @@ mongoose.connect(atlasURI, {
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('MongoDB connection error:', err.message));
 
-// Log connection status
 mongoose.connection.on('error', (err) => {
   console.error('MongoDB connection error:', err);
 });
@@ -37,14 +36,15 @@ const userSchema = new mongoose.Schema({
   additionalInfo: String,
   verified: { type: Boolean, default: false },
   verificationToken: String,
-  summaries: [{ text: String, createdAt: { type: Date, default: Date.now } }],
+  summaries: [{ text: String, createdAt: { type: Date, default: Date.now } }], // Array of summaries
+  textSubmitted: { text: String, createdAt: { type: Date, default: Date.now } }, // Single text submission
 });
 
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
 const User = mongoose.model('User', userSchema);
 
-// Result Schema
+// Result Schema (unchanged)
 const resultSchema = new mongoose.Schema({
   userId: String,
   scores: {
@@ -193,7 +193,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Save Summary Endpoint
+// Save Summary Endpoint (unchanged)
 app.post('/summaries', async (req, res) => {
   const { token, summary } = req.body;
   try {
@@ -210,7 +210,7 @@ app.post('/summaries', async (req, res) => {
   }
 });
 
-// Get Summaries Endpoint
+// Get Summaries Endpoint (unchanged)
 app.get('/summaries', async (req, res) => {
   const { token } = req.query;
   try {
@@ -225,7 +225,39 @@ app.get('/summaries', async (req, res) => {
   }
 });
 
-// Save Results Endpoint
+// Save Text Endpoint (new, for textSubmitted)
+app.post('/text', async (req, res) => {
+  const { token, text } = req.body;
+  try {
+    const decoded = jwt.verify(token, 'secretkey');
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) return res.status(401).send('Unauthorized');
+
+    user.textSubmitted = { text, createdAt: new Date() }; // Overwrites existing textSubmitted
+    await user.save();
+    res.send('Text saved successfully');
+  } catch (error) {
+    console.error('Error saving text:', error);
+    res.status(500).send('Failed to save text');
+  }
+});
+
+// Get Text Endpoint (new, for textSubmitted)
+app.get('/text', async (req, res) => {
+  const { token } = req.query;
+  try {
+    const decoded = jwt.verify(token, 'secretkey');
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) return res.status(401).send('Unauthorized');
+
+    res.json(user.textSubmitted || null); // Return null if no text submitted
+  } catch (error) {
+    console.error('Error fetching text:', error);
+    res.status(500).send('Failed to fetch text');
+  }
+});
+
+// Save Results Endpoint (unchanged)
 app.post('/api/results', async (req, res) => {
   console.time('POST /api/results');
   const { userId, scores } = req.body;
@@ -258,7 +290,7 @@ app.post('/api/results', async (req, res) => {
   }
 });
 
-// Get Results Endpoint
+// Get Results Endpoint (unchanged)
 app.get('/api/results', async (req, res) => {
   console.time('GET /api/results');
   try {

@@ -1,25 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Import Link for navigation
-import './123.css'; // Assuming this is your CSS file
+import { Link } from 'react-router-dom';
+import './123.css';
 
 const TextViewer = ({ darkMode, toggleDarkMode }) => {
-  const [text, setText] = useState(''); // State for the text input
-  const [token, setToken] = useState(localStorage.getItem('token') || ''); // JWT token for authentication
-  const [isLoggedIn, setIsLoggedIn] = useState(!!token); // Check if user is logged in based on token
-  const [savedTexts, setSavedTexts] = useState([]); // State to store fetched texts
-  const [message, setMessage] = useState(''); // Feedback message for user
+  const [text, setText] = useState('');
+  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [isLoggedIn, setIsLoggedIn] = useState(!!token);
+  const [savedText, setSavedText] = useState(null); // Single saved text
+  const [message, setMessage] = useState('');
 
-  // Handle text change in the editor
   const handleTextChange = (event) => {
     setText(event.target.value);
   };
 
-  // Clear the text area
   const clearText = () => {
     setText('');
   };
 
-  // Save text to the server
   const saveText = async () => {
     if (!isLoggedIn) {
       setMessage('Please log in to save text.');
@@ -31,16 +28,16 @@ const TextViewer = ({ darkMode, toggleDarkMode }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/summaries', {
+      const response = await fetch('http://localhost:5000/text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, summary: text }),
+        body: JSON.stringify({ token, text }),
       });
 
       const result = await response.text();
       if (response.ok) {
         setMessage('Text saved successfully!');
-        fetchSavedTexts(); // Refresh the list after saving
+        fetchSavedText();
       } else {
         setMessage(result || 'Failed to save text.');
       }
@@ -50,51 +47,47 @@ const TextViewer = ({ darkMode, toggleDarkMode }) => {
     }
   };
 
-  // Fetch saved texts from the server
-  const fetchSavedTexts = async () => {
+  const fetchSavedText = async () => {
     if (!isLoggedIn) {
-      setMessage('Please log in to view saved texts.');
+      setMessage('Please log in to view saved text.');
       return;
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/summaries?token=${token}`);
+      const response = await fetch(`http://localhost:5000/text?token=${token}`);
       const data = await response.json();
       if (response.ok) {
-        setSavedTexts(data);
-        setMessage('Saved texts loaded.');
+        setSavedText(data);
+        setMessage('Saved text loaded.');
       } else {
-        setMessage(data || 'Failed to fetch saved texts.');
+        setMessage(data || 'Failed to fetch saved text.');
       }
     } catch (error) {
-      console.error('Error fetching texts:', error);
-      setMessage('Error fetching saved texts.');
+      console.error('Error fetching text:', error);
+      setMessage('Error fetching saved text.');
     }
   };
 
-  // Simulate login/logout for testing (replace with actual login logic)
   const toggleLogin = () => {
     if (isLoggedIn) {
       localStorage.removeItem('token');
       setToken('');
       setIsLoggedIn(false);
-      setSavedTexts([]);
+      setSavedText(null);
       setMessage('Logged out.');
     } else {
-      // Simulate login (replace with real login flow)
       const mockToken = 'mock-jwt-token'; // Replace with actual token from login
       localStorage.setItem('token', mockToken);
       setToken(mockToken);
       setIsLoggedIn(true);
       setMessage('Logged in (mock).');
-      fetchSavedTexts(); // Fetch texts on login
+      fetchSavedText();
     }
   };
 
-  // Load saved texts on component mount if logged in
   useEffect(() => {
     if (isLoggedIn) {
-      fetchSavedTexts();
+      fetchSavedText();
     }
   }, [isLoggedIn]);
 
@@ -149,20 +142,18 @@ const TextViewer = ({ darkMode, toggleDarkMode }) => {
 
           {isLoggedIn && (
             <>
-              <h2 className="subtitle">Saved Texts</h2>
-              <button className="fetch-button" onClick={fetchSavedTexts}>
-                Refresh Saved Texts
+              <h2 className="subtitle">Saved Text</h2>
+              <button className="fetch-button" onClick={fetchSavedText}>
+                Refresh Saved Text
               </button>
               <ul className="stats-list">
-                {savedTexts.length > 0 ? (
-                  savedTexts.map((saved, index) => (
-                    <li key={index} className="stat-item">
-                      <span>{saved.text.substring(0, 20)}...</span>
-                      <span>{new Date(saved.createdAt).toLocaleDateString()}</span>
-                    </li>
-                  ))
+                {savedText ? (
+                  <li className="stat-item">
+                    <span>{savedText.text.substring(0, 20)}...</span>
+                    <span>{new Date(savedText.createdAt).toLocaleDateString()}</span>
+                  </li>
                 ) : (
-                  <li className="stat-item">No saved texts yet.</li>
+                  <li className="stat-item">No saved text yet.</li>
                 )}
               </ul>
             </>
