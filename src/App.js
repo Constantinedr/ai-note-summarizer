@@ -3,7 +3,8 @@ import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
 import { BrowserRouter as Router, Route, Routes, useSearchParams, Link } from "react-router-dom";
 import styles from "./App.module.css";
-//dfsdfds
+import RGBComponent from "./RGBComponent.js";
+
 // Hugging Face API configuration
 const HF_API_TOKEN = "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"; // Replace with your HF API token
 const HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
@@ -30,9 +31,8 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
   const [pastSummaries, setPastSummaries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const isLoggedIn = !!localStorage.getItem("token");
-  const MAX_WORDS = 400; // Set word limit based on findings
+  const MAX_WORDS = 400;
 
-  // Calculate word count
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
 
   useEffect(() => {
@@ -128,7 +128,6 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
 
   return (
     <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
-
       <h1 className={styles.title}> Mary AI </h1>
       <button className={styles.pastSummariesButton} onClick={toggleHistory}>
         {showHistory ? "Hide History" : "Past Summaries"}
@@ -206,24 +205,17 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
             </ul>
           )}
         </div>
-        
       </div>
-      <div className={styles.rightSection}> 
+      <div className={styles.rightSection}>
         <h2 className={styles.subtitle}>More Options</h2>
-        <Link to="/RGBcomponent">
-        <button className={styles.button}>Go to RGB Component</button>
+        <Link to="/rgb-component">
+          <button className={styles.button}>Go to RGB Component</button>
         </Link>
-        
-        
-        </div>
-
-
+      </div>
     </div>
-    
   );
 }
 
-// Auth and Verify components remain unchanged (omitted for brevity)
 function Auth({ onLogin, darkMode, toggleDarkMode }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -479,6 +471,7 @@ function App() {
             }
           />
           <Route path="/verify" element={<Verify />} />
+          <Route path="/rgb-component" element={<RGBComponent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
         </Routes>
       </div>
     </Router>
