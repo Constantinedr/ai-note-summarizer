@@ -28,7 +28,7 @@ const TextViewer = ({ darkMode, toggleDarkMode }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/text', {
+      const response = await fetch('https://ai-note-summarizer.onrender.com/text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, text }),
@@ -54,7 +54,7 @@ const TextViewer = ({ darkMode, toggleDarkMode }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/text?token=${token}`);
+      const response = await fetch(`https://ai-note-summarizer.onrender.com/text?token=${token}`);
       const data = await response.json();
       if (response.ok) {
         // Ensure savedText is either a valid object with text or null
