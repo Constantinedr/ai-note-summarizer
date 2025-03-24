@@ -1,18 +1,4 @@
-
-.container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #1a1a2e;
-    color: white;
-    overflow: hidden;
-    width: 100%;
-    padding: 20px;
-  }
-  
-  html,
+ html,
   body {
     margin: 0;
     padding: 0;
