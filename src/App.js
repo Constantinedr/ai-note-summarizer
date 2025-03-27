@@ -7,7 +7,7 @@ import RGBComponent from "./RGBComponent.js";
 import PersonalityTrait from "./Personality-trait.js";
 import TextViewer from "./Text-viewer.js";
 import Torn from "./Torn.js"
-import TicTacToe from "TicTacToe.js"
+import TicTacToe from "./TicTacToe.js"
 
 // Hugging Face API configuration
 const HF_API_TOKEN = "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"; // Replace with your HF API token
@@ -225,7 +225,7 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
         <Link to="/Torn-game">
           <button className={styles.button}>Go to Torn</button>
         </Link>
-        <Link to="/TikTakToe-game">
+        <Link to="/TicTacToe-game">
           <button className={styles.button}>Go to Torn</button>
         </Link>
       </div>
@@ -493,7 +493,7 @@ function App() {
           <Route path="/text-viewer" element={<TextViewer darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
           <Route path="/Torn-game" element={<Torn darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
           
-          <Route path="/TikTakToe-game" element={<TicTacToe darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+          <Route path="/TicTacToe-game" element={<TicTacToe darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
         </Routes>
       </div>
     </Router>
