@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import './TicTacToe.css'; // We'll add CSS separately
+import './App.css';
+
 import { Link } from 'react-router-dom';
 
 const TicTacToe = () => {

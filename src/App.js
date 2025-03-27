@@ -6,8 +6,8 @@ import styles from "./App.module.css";
 import RGBComponent from "./RGBComponent.js";
 import PersonalityTrait from "./Personality-trait.js";
 import TextViewer from "./Text-viewer.js";
-import Torn from "./Torn.js"
-import TicTacToe from "./TicTacToe.js"
+import Torn from "./Torn.js";
+import TicTacToe from "./TicTacToe.js";
 
 // Hugging Face API configuration
 const HF_API_TOKEN = "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"; // Replace with your HF API token
