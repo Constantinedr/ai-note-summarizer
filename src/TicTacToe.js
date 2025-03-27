@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import './App.css';
-
+import './TicTacToe.css'; // We'll add CSS separately
 import { Link } from 'react-router-dom';
 
 const TicTacToe = () => {
@@ -88,6 +87,7 @@ const TicTacToe = () => {
           </div>
         ))}
       </div>
+      <br></br>
               <Link to="/">
                 <button className="button back-button">
                   Back to Summarizer
