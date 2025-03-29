@@ -37,13 +37,13 @@
     width: 90%;
     max-width: 1600px;
     margin: 20px auto;
-    min-height: 700px;
+    min-height: 600px;
   }
   
   .unity-game {
     width: 1150px;
     max-width: 1600px;
-    height: 700px;
+    height: 600px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(66, 153, 225, 0.2);

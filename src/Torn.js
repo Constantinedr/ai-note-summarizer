@@ -4,7 +4,7 @@ import "./123.css";
 import { Link } from "react-router-dom";
 
 function Torn() {
-  const { unityProvider, isLoaded, loadingProgression } = useUnityContext({
+  const { unityProvider, isLoaded, loadingProgression, sendMessage } = useUnityContext({
     loaderUrl: "build/Build.loader.js",
     dataUrl: "build/Build.data",
     frameworkUrl: "build/Build.framework.js",
@@ -21,16 +21,26 @@ function Torn() {
     setProgress(Math.round(loadingProgression * 100));
   }, [loadingProgression]);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        sendMessage("GameManager", "PauseGame"); // Pause game & mute audio
+      } else {
+        sendMessage("GameManager", "ResumeGame"); // Resume game & unmute audio
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [sendMessage]);
+
   return (
     <div className="game-container">
       {!isLoaded && (
         <div className="loading-container">
           <p>Loading... {progress}%</p>
           <div className="loading-bar">
-            <div
-              className="loading-progress"
-              style={{ width: `${progress}%` }}
-            ></div>
+            <div className="loading-progress" style={{ width: `${progress}%` }}></div>
           </div>
         </div>
       )}
