@@ -4,10 +4,10 @@ import "./123.css"; // Make sure this CSS file exists and contains appropriate s
 
 function Torn() {
   const { unityProvider } = useUnityContext({
-    loaderUrl: "build/unityBuild.loader.js",    // Updated paths to match original
-    dataUrl: "build/unityBuild.data",
-    frameworkUrl: "build/unityBuild.framework.js",
-    codeUrl: "build/unityBuild.wasm",
+    loaderUrl: "build/Build.loader.js",    // Updated paths to match original
+    dataUrl: "build/Build.data",
+    frameworkUrl: "build/Build.framework.js",
+    codeUrl: "build/Build.wasm",
     streamingAssetsUrl: "StreamingAssets", // Added from original config
     companyName: "Test",
     productName: "test",
