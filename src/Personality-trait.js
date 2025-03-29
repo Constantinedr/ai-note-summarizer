@@ -149,10 +149,7 @@ const PersonalityTrait = ({ darkMode, toggleDarkMode }) => {
     <div className={`container ${darkMode ? 'darkMode' : ''}`}>
       <div className="summarizerCard">
         <div className="leftSection">
-          <h1 className="title">Personality Quest</h1>
-          <button className="darkModeToggle" onClick={toggleDarkMode}>
-            {darkMode ? "Light Mode" : "Dark Mode"}
-          </button>
+
           
           {!showResults ? (
             <div className="section">
