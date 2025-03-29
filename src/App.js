@@ -226,7 +226,7 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
           <button className={styles.button}>Go to Torn</button>
         </Link>
         <Link to="/TicTacToe-game">
-          <button className={styles.button}>Go to Torn</button>
+          <button className={styles.button}>Go to TicTacToe</button>
         </Link>
       </div>
     </div>
