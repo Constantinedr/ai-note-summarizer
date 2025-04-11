@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@huggingface/inference": "^3.5.2",
+    "@paypal/react-paypal-js": "^8.8.2",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",

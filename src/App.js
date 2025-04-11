@@ -8,6 +8,7 @@ import PersonalityTrait from "./Personality-trait.js";
 import TextViewer from "./Text-viewer.js";
 import Torn from "./Torn.js";
 import TicTacToe from "./TicTacToe.js";
+import PayPalButton from "./PayPalButton"; // ⬅️ Import this at the top
 
 // Hugging Face API configuration
 const HF_API_TOKEN = "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"; // Replace with your HF API token
@@ -394,6 +395,11 @@ function Auth({ onLogin, darkMode, toggleDarkMode }) {
           </div>
         )}
         {message && <p className={styles.message}>{message}</p>}
+        <h2 className={styles.subtitle}>Support Us</h2>
+<PayPalButton amount="3.00" onSuccess={(details) => {
+  alert("Thank you for your support!");
+  console.log("Payment Details:", details);
+}} />
       </div>
     </div>
   );
@@ -461,6 +467,7 @@ function App() {
   };
 
   return (
+    
     <Router>
       <div className={`${styles.container} ${darkMode ? styles.darkMode : ""}`}>
         <Routes>
@@ -485,7 +492,9 @@ function App() {
                   <Auth onLogin={handleLogin} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                 )}
               </>
+              
             }
+            
           />
           <Route path="/verify" element={<Verify />} />
           <Route path="/rgb-component" element={<RGBComponent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
@@ -494,6 +503,7 @@ function App() {
           <Route path="/Torn-game" element={<Torn darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
           
           <Route path="/TicTacToe-game" element={<TicTacToe darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
+
         </Routes>
       </div>
     </Router>
