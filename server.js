@@ -7,13 +7,16 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
+
+// Load environment variables
+require('dotenv').config();
 
 app.use(cors());
 app.use(bodyParser.json());
 
 // MongoDB Atlas connection
-const atlasURI = 'mongodb+srv://kostalampadaris:7H6u5KGL7e62KVt@cluster0.uic4a.mongodb.net/ai?retryWrites=true&w=majority&appName=Cluster0';
+const atlasURI = process.env.MONGODB_URI || 'mongodb+srv://kostalampadaris:7H6u5KGL7e62KVt@cluster0.uic4a.mongodb.net/ai?retryWrites=true&w=majority&appName=Cluster0';
 mongoose.connect(atlasURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -36,15 +39,15 @@ const userSchema = new mongoose.Schema({
   additionalInfo: String,
   verified: { type: Boolean, default: false },
   verificationToken: String,
-  summaries: [{ text: String, createdAt: { type: Date, default: Date.now } }], // Array of summaries
-  textSubmitted: { text: String, createdAt: { type: Date, default: Date.now } }, // Single text submission
+  summaries: [{ text: String, createdAt: { type: Date, default: Date.now } }],
+  textSubmitted: { text: String, createdAt: { type: Date, default: Date.now } },
 });
 
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
 const User = mongoose.model('User', userSchema);
 
-// Result Schema (unchanged)
+// Result Schema
 const resultSchema = new mongoose.Schema({
   userId: String,
   scores: {
@@ -59,15 +62,27 @@ const resultSchema = new mongoose.Schema({
 
 const Result = mongoose.model('Result', resultSchema);
 
+// Payment Schema (new, to store PayPal transactions)
+const paymentSchema = new mongoose.Schema({
+  userId: String,
+  orderId: String,
+  payerEmail: String,
+  amount: String,
+  status: String,
+  timestamp: { type: Date, default: Date.now },
+});
+
+const Payment = mongoose.model('Payment', paymentSchema);
+
 // CAPTCHA bypass secret
-const CAPTCHA_BYPASS_SECRET = 'my-secret-bypass-token';
+const CAPTCHA_BYPASS_SECRET = process.env.CAPTCHA_BYPASS_SECRET || 'my-secret-bypass-token';
 
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'lampadarisconstantine@gmail.com',
-    pass: 'smtr gceq ugov eehi',
+    user: process.env.EMAIL_USER || 'lampadarisconstantine@gmail.com',
+    pass: process.env.EMAIL_PASS || 'smtr gceq ugov eehi',
   },
 });
 
@@ -75,6 +90,24 @@ transporter.verify((error, success) => {
   if (error) console.error('Email transporter error:', error);
   else console.log('Email transporter is ready');
 });
+
+// Admin notification function
+const sendAdminNotification = async (subject, message) => {
+  const adminEmail = process.env.ADMIN_EMAIL || 'lampadarisconstantine@gmail.com'; // Your email
+  const mailOptions = {
+    from: 'ai-note-summarizer <lampadarisconstantine@gmail.com>',
+    to: adminEmail,
+    subject: `AI Note Summarizer: ${subject}`,
+    text: message,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Admin notification sent: ${subject}`);
+  } catch (error) {
+    console.error('Error sending admin notification:', error);
+  }
+};
 
 // Validation functions
 const isValidPassword = (password) => {
@@ -95,7 +128,7 @@ const sendVerificationEmail = async (email, token) => {
     from: 'ai-note-summarizer <lampadarisconstantine@gmail.com>',
     to: email,
     subject: 'Verify Your Email',
-    html: `<p>Click <a href="https://ai-note-summarizer.onrender.com/verify?token=${token}">here</a> to verify your email.</p>`,
+    html: `<p>Click <a href="${process.env.FRONTEND_URL || 'https://ai-note-summarizer.onrender.com'}/verify?token=${token}">here</a> to verify your email.</p>`,
   };
 
   try {
@@ -130,7 +163,7 @@ app.post('/register', async (req, res) => {
     if (existingUser) return res.status(400).send('Username already taken');
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const verificationToken = jwt.sign({ email }, 'verificationSecret', { expiresIn: '1h' });
+    const verificationToken = jwt.sign({ email }, process.env.JWT_VERIFICATION_SECRET || 'verificationSecret', { expiresIn: '1h' });
 
     const user = new User({
       username,
@@ -142,6 +175,13 @@ app.post('/register', async (req, res) => {
     await user.save();
 
     await sendVerificationEmail(email, verificationToken);
+    
+    // Send admin notification
+    await sendAdminNotification(
+      'New User Registration',
+      `A new user has registered:\nUsername: ${username}\nEmail: ${email}\nAdditional Info: ${additionalInfo || 'None'}`
+    );
+
     res.status(201).send('User registered. Please check your email to verify your account.');
   } catch (error) {
     console.error('Registration error:', error);
@@ -154,7 +194,7 @@ app.get('/verify', async (req, res) => {
   const { token } = req.query;
 
   try {
-    const decoded = jwt.verify(token, 'verificationSecret');
+    const decoded = jwt.verify(token, process.env.JWT_VERIFICATION_SECRET || 'verificationSecret');
     const user = await User.findOne({ email: decoded.email });
 
     if (!user) return res.status(400).send('Invalid token');
@@ -162,6 +202,12 @@ app.get('/verify', async (req, res) => {
     user.verified = true;
     user.verificationToken = undefined;
     await user.save();
+
+    // Send admin notification
+    await sendAdminNotification(
+      'Email Verified',
+      `User has verified their email:\nEmail: ${user.email}\nUsername: ${user.username}`
+    );
 
     res.send('Email verified successfully');
   } catch (error) {
@@ -185,7 +231,14 @@ app.post('/login', async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).send('Invalid password');
 
-    const token = jwt.sign({ email }, 'secretkey');
+    const token = jwt.sign({ email }, process.env.JWT_SECRET || 'secretkey');
+
+    // Send admin notification
+    await sendAdminNotification(
+      'User Login',
+      `User has logged in:\nEmail: ${email}\nUsername: ${user.username}\nTime: ${new Date().toISOString()}`
+    );
+
     res.json({ token });
   } catch (error) {
     console.error('Login error:', error);
@@ -193,16 +246,23 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Save Summary Endpoint (unchanged)
+// Save Summary Endpoint
 app.post('/summaries', async (req, res) => {
   const { token, summary } = req.body;
   try {
-    const decoded = jwt.verify(token, 'secretkey');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
     const user = await User.findOne({ email: decoded.email });
     if (!user) return res.status(401).send('Unauthorized');
 
     user.summaries.push({ text: summary });
     await user.save();
+
+    // Send admin notification
+    await sendAdminNotification(
+      'New Summary Submitted',
+      `User submitted a new summary:\nEmail: ${user.email}\nUsername: ${user.username}\nSummary: ${summary}\nTime: ${new Date().toISOString()}`
+    );
+
     res.send('Summary saved successfully');
   } catch (error) {
     console.error('Error saving summary:', error);
@@ -210,11 +270,11 @@ app.post('/summaries', async (req, res) => {
   }
 });
 
-// Get Summaries Endpoint (unchanged)
+// Get Summaries Endpoint
 app.get('/summaries', async (req, res) => {
   const { token } = req.query;
   try {
-    const decoded = jwt.verify(token, 'secretkey');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
     const user = await User.findOne({ email: decoded.email });
     if (!user) return res.status(401).send('Unauthorized');
 
@@ -225,16 +285,23 @@ app.get('/summaries', async (req, res) => {
   }
 });
 
-// Save Text Endpoint (new, for textSubmitted)
+// Save Text Endpoint
 app.post('/text', async (req, res) => {
   const { token, text } = req.body;
   try {
-    const decoded = jwt.verify(token, 'secretkey');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
     const user = await User.findOne({ email: decoded.email });
     if (!user) return res.status(401).send('Unauthorized');
 
-    user.textSubmitted = { text, createdAt: new Date() }; // Overwrites existing textSubmitted
+    user.textSubmitted = { text, createdAt: new Date() };
     await user.save();
+
+    // Send admin notification
+    await sendAdminNotification(
+      'New Text Submitted',
+      `User submitted new text:\nEmail: ${user.email}\nUsername: ${user.username}\nText: ${text}\nTime: ${new Date().toISOString()}`
+    );
+
     res.send('Text saved successfully');
   } catch (error) {
     console.error('Error saving text:', error);
@@ -242,22 +309,53 @@ app.post('/text', async (req, res) => {
   }
 });
 
-// Get Text Endpoint (new, for textSubmitted)
+// Get Text Endpoint
 app.get('/text', async (req, res) => {
   const { token } = req.query;
   try {
-    const decoded = jwt.verify(token, 'secretkey');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
     const user = await User.findOne({ email: decoded.email });
     if (!user) return res.status(401).send('Unauthorized');
 
-    res.json(user.textSubmitted || null); // Return null if no text submitted
+    res.json(user.textSubmitted || null);
   } catch (error) {
     console.error('Error fetching text:', error);
     res.status(500).send('Failed to fetch text');
   }
 });
 
-// Save Results Endpoint (unchanged)
+// Save PayPal Payment Endpoint
+app.post('/api/payments', async (req, res) => {
+  const { token, orderId, payerEmail, amount } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) return res.status(401).send('Unauthorized');
+
+    const payment = new Payment({
+      userId: user._id.toString(),
+      orderId,
+      payerEmail,
+      amount,
+      status: 'COMPLETED',
+    });
+    await payment.save();
+
+    // Send admin notification
+    await sendAdminNotification(
+      'New Payment Received',
+      `A payment was completed:\nEmail: ${user.email}\nUsername: ${user.username}\nOrder ID: ${orderId}\nPayer Email: ${payerEmail}\nAmount: $${amount}\nTime: ${new Date().toISOString()}`
+    );
+
+    res.json({ message: 'Payment recorded successfully' });
+  } catch (error) {
+    console.error('Error saving payment:', error);
+    res.status(500).send('Failed to record payment');
+  }
+});
+
+// Save Results Endpoint
 app.post('/api/results', async (req, res) => {
   console.time('POST /api/results');
   const { userId, scores } = req.body;
@@ -290,7 +388,7 @@ app.post('/api/results', async (req, res) => {
   }
 });
 
-// Get Results Endpoint (unchanged)
+// Get Results Endpoint
 app.get('/api/results', async (req, res) => {
   console.time('GET /api/results');
   try {
