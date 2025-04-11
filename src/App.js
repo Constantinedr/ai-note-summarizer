@@ -229,6 +229,11 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
         <Link to="/TicTacToe-game">
           <button className={styles.button}>Go to TicTacToe</button>
         </Link>
+        <h2 className={styles.subtitle}>Support Us</h2>
+<PayPalButton amount="3.00" onSuccess={(details) => {
+  alert("Thank you for your support!");
+  console.log("Payment Details:", details);
+}} />
       </div>
     </div>
   );
@@ -395,11 +400,6 @@ function Auth({ onLogin, darkMode, toggleDarkMode }) {
           </div>
         )}
         {message && <p className={styles.message}>{message}</p>}
-        <h2 className={styles.subtitle}>Support Us</h2>
-<PayPalButton amount="3.00" onSuccess={(details) => {
-  alert("Thank you for your support!");
-  console.log("Payment Details:", details);
-}} />
       </div>
     </div>
   );
