@@ -8,7 +8,8 @@ import PersonalityTrait from "./Personality-trait.js";
 import TextViewer from "./Text-viewer.js";
 import Torn from "./Torn.js";
 import TicTacToe from "./TicTacToe.js";
-import PayPalButton from "./PayPalButton"; // ⬅️ Import this at the top
+import PayPalButton from "./PayPalButton";
+import Pay from "./Pay.js"; // ⬅️ Import this at the top
 
 // Hugging Face API configuration
 const HF_API_TOKEN = "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"; // Replace with your HF API token
@@ -229,11 +230,16 @@ function Summarizer({ onLogout, darkMode, toggleDarkMode }) {
         <Link to="/TicTacToe-game">
           <button className={styles.button}>Go to TicTacToe</button>
         </Link>
-        <h2 className={styles.subtitle}>Support Us</h2>
-<PayPalButton amount="3.00" onSuccess={(details) => {
-  alert("Thank you for your support!");
-  console.log("Payment Details:", details);
-}} />
+        <Link to="/PAY">
+          <button className={styles.button}>Go to The paying option</button>
+        </Link>
+        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+  <input type="hidden" name="cmd" value="_s-xclick" />
+  <input type="hidden" name="hosted_button_id" value="SR635HXVZJ6CS" />
+  <input type="hidden" name="currency_code" value="EUR" />
+  <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynow_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Buy Now" />
+</form>
+
       </div>
     </div>
   );
@@ -503,7 +509,7 @@ function App() {
           <Route path="/Torn-game" element={<Torn darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
           
           <Route path="/TicTacToe-game" element={<TicTacToe darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
-
+          <Route path="/PAY" element={<Pay darkMode={darkMode} toggleDarkMode={toggleDarkMode} />} />
         </Routes>
       </div>
     </Router>
